@@ -53,8 +53,9 @@ class applyIK(bpy.types.Operator):
             #bpy.ops.transform.rotate(value=3.14 / 2.0, orient_axis='X', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)))
             if areBonesExtended: #stretch bones
                 
-                #bpy.ops.object.mode_set(mode='EDIT', toggle=False)
-                #fistLeft.parent = None
+                bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+                selected_ob.data.edit_bones["FistLeft"].parent = None
+                bpy.ops.object.mode_set(mode='POSE', toggle=False)
 
                 v = fistLeft.head - handLeft.head
                 bv = handLeft.tail - handLeft.head
@@ -67,6 +68,10 @@ class applyIK(bpy.types.Operator):
                     Matrix.Translation(-handLeft.head)
                 )
                 handLeft.matrix = M @ handLeft.matrix
+                
+                bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+                selected_ob.data.edit_bones["FistLeft"].parent = selected_ob.data.edit_bones["HandLeft"]
+                bpy.ops.object.mode_set(mode='POSE', toggle=False)
                 
                 #fistLeft.parent = handLeft
 
