@@ -1,6 +1,7 @@
 import bpy
 import json
 import math
+import pathlib
 import mathutils
 import numpy as np
 from mathutils import Matrix
@@ -87,7 +88,7 @@ class addCubeSample(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
  
     def execute(self, context):
-        bpy.ops.import_mesh.stl(filepath = "C:\\Users\\ossya\\Documents\\BlenderScripting\\Rigging and Animation\\Mesh.stl")
+        bpy.ops.import_mesh.stl(filepath = (str(pathlib.Path(__file__).parent.parent.resolve()) + "\\Mesh.stl"))
         return {"FINISHED"}
     
 class addArmature(bpy.types.Operator):
@@ -113,7 +114,7 @@ class addArmature(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         ebs = obArm.data.edit_bones
 
-        rigInfo = self.readRigInfo("C:\\Users\\ossya\\Documents\\BlenderScripting\\Rigging and Animation\\RigInfo.json")
+        rigInfo = self.readRigInfo((str(pathlib.Path(__file__).parent.parent.resolve()) + "\\RigInfo.json"))
         
         keypoints = {}
         
