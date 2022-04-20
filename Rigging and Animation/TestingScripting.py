@@ -3,6 +3,7 @@ import json
 import math
 import mathutils
 import numpy as np
+from mathutils import Matrix
 
 class TestPanel(bpy.types.Panel):
     bl_label = "Test Panel"
@@ -30,8 +31,8 @@ class applyIK(bpy.types.Operator):
         selected_ob = bpy.data.objects['Armature']
         
         if selected_ob != None:
-            bpy.ops.object.mode_set(mode='EDIT', toggle=False)
-            bones = selected_ob.data.edit_bones
+            bpy.ops.object.mode_set(mode='POSE', toggle=False)
+            bones = selected_ob.pose.bones
         
             fistLeft = bones["FistLeft"] #target
             handLeft = bones["HandLeft"]
@@ -41,22 +42,37 @@ class applyIK(bpy.types.Operator):
             noOfIterations = 15
             convergenceDist = 0.001 #depends on the size of the model
             
+            print(handLeft.head)
             distBetweenBones = np.linalg.norm(np.array(shoulderLeft.tail) - np.array(handLeft.head))
             totalArmLength = handLeft.length + shoulderLeft.length + distBetweenBones
             
             areBonesExtended = totalArmLength <= np.linalg.norm(np.array(shoulderLeft.head) - np.array(fistLeft.head))
             
-            bpy.ops.object.mode_set(mode='POSE', toggle=False)
+            #bpy.ops.object.mode_set(mode='POSE', toggle=False)
             
-            bpy.ops.transform.rotate(value=3.14 / 2.0, orient_axis='X', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)))
-            
+            #bpy.ops.transform.rotate(value=3.14 / 2.0, orient_axis='X', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)))
             if areBonesExtended: #stretch bones
                 
-                direction = self.normalize(fistLeft.head - shoulderLeft.head)
+                #bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+                #fistLeft.parent = None
+
+                v = fistLeft.head - handLeft.head
+                bv = handLeft.tail - handLeft.head
+
+                rd = bv.rotation_difference(v)
+
+                M = (
+                    Matrix.Translation(handLeft.head) @
+                    rd.to_matrix().to_4x4() @
+                    Matrix.Translation(-handLeft.head)
+                )
+                handLeft.matrix = M @ handLeft.matrix
                 
-                shoulderLeft.tail = shoulderLeft.head + mathutils.Vector(direction * shoulderLeft.length)
-                handLeft.head = shoulderLeft.tail
-                handLeft.tail = handLeft.head + mathutils.Vector(direction * handLeft.length)
+                #fistLeft.parent = handLeft
+
+                #shoulderLeft.tail = shoulderLeft.head + mathutils.Vector(direction * shoulderLeft.length)
+                #handLeft.head = shoulderLeft.tail
+                #handLeft.tail = handLeft.head + mathutils.Vector(direction * handLeft.length)
             
         return {"FINISHED"}
         
@@ -66,7 +82,7 @@ class addCubeSample(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
  
     def execute(self, context):
-        bpy.ops.import_mesh.stl(filepath = "C:\\Users\\ossya\\Documents\\BlenderScripting\\Mesh.stl")
+        bpy.ops.import_mesh.stl(filepath = "C:\\Users\\ossya\\Documents\\BlenderScripting\\Rigging and Animation\\Mesh.stl")
         return {"FINISHED"}
     
 class addArmature(bpy.types.Operator):
@@ -92,7 +108,7 @@ class addArmature(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         ebs = obArm.data.edit_bones
 
-        rigInfo = self.readRigInfo("C:\\Users\\ossya\\Documents\\BlenderScripting\\RigInfo.json")
+        rigInfo = self.readRigInfo("C:\\Users\\ossya\\Documents\\BlenderScripting\\Rigging and Animation\\RigInfo.json")
         
         keypoints = {}
         
