@@ -1,3 +1,6 @@
+pose_ex/
+*.fbx
+
 # generic files to ignore
 .git
 
