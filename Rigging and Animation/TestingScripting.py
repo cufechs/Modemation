@@ -39,6 +39,18 @@ class cf(): # common functions
             angle = math.degrees(angle)
             
         return angle
+    
+    @staticmethod
+    def getDistance_2pts(p1, p2):
+        return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+
+    @staticmethod
+    def getThighAngle(L1, L2, degree=False):
+        angle = math.acos(L2/L1)
+        if degree:
+            angle = math.degrees(angle)
+            
+        return angle
 
 class TestPanel(bpy.types.Panel):
     bl_label = "Test Panel"
@@ -59,11 +71,13 @@ class animate(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
  
     def execute(self, context):
+        
         bones_map = [['ShoulderLeft', 'LShoulder', 'LElbow'],
                      ['ShoulderRight', 'RShoulder', 'RElbow'],
                      ['ThighLeft', 'LHip', 'LKnee'],
                      ['ThighRight', 'RHip', 'RKnee'],
                      ['SpinalCordB4', 'Nose', 'Neck']]
+                     
         frames = []
         frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\1_keypoints.json'))
         frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\2_keypoints.json'))
@@ -72,9 +86,8 @@ class animate(bpy.types.Operator):
         frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\5_keypoints.json'))
          
                      
-        # Frame 0 (intial model state) -> 1
-        
-        # Frame 1 -> 2 
+        # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
+
         
         scn = bpy.context.scene
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
@@ -88,6 +101,7 @@ class animate(bpy.types.Operator):
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1].bone.select = False
             
+        # XZ plane Animation
         for frame_num in range(len(frames)-1):
             for x1,x2,x3 in bones_map:
                 
@@ -99,6 +113,64 @@ class animate(bpy.types.Operator):
 
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 bones[x1].bone.select = False
+                
+        # legs (to front) Animation
+        thighAngleThreshold = 0.5
+        
+        
+        Lmax_thigh_length = 0
+        Rmax_thigh_length = 0
+        for frame_num in range(len(frames)):
+            L_thigh_length = cf.getDistance_2pts(frames[frame_num]['LHip'][:-1], frames[frame_num]['LKnee'][:-1])
+            R_thigh_length = cf.getDistance_2pts(frames[frame_num]['RHip'][:-1], frames[frame_num]['RKnee'][:-1])
+            if L_thigh_length > Lmax_thigh_length: Lmax_thigh_length = L_thigh_length
+            if R_thigh_length > Rmax_thigh_length: Rmax_thigh_length = R_thigh_length
+            
+        Llast_thigh_angle = 0
+        Rlast_thigh_angle = 0
+        for frame_num in range(1,len(frames)):
+            L_thigh_length = cf.getDistance_2pts(frames[frame_num]['LHip'][:-1], frames[frame_num]['LKnee'][:-1])
+            R_thigh_length = cf.getDistance_2pts(frames[frame_num]['RHip'][:-1], frames[frame_num]['RKnee'][:-1])
+            LThighAngle = cf.getThighAngle(Lmax_thigh_length, L_thigh_length)
+            RThighAngle = cf.getThighAngle(Rmax_thigh_length, R_thigh_length)
+            
+            '''if Llast_thigh_angle != 0:             
+                bones['ThighLeft'].bone.select = True
+                bpy.context.scene.frame_set((frame_num)*24 + 1)
+                bpy.ops.transform.rotate(value=-Llast_thigh_angle, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                bones['ThighLeft'].bone.select = False
+                Llast_thigh_angle = 0
+                
+            if Rlast_thigh_angle != 0: 
+                bones['ThighRight'].bone.select = True
+                bpy.context.scene.frame_set((frame_num)*24 + 1)
+                bpy.ops.transform.rotate(value=-Rlast_thigh_angle, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                bones['ThighRight'].bone.select = False
+                Rlast_thigh_angle = 0'''
+                
+                
+            if LThighAngle > thighAngleThreshold: 
+                bones['ThighLeft'].bone.select = True
+                bpy.context.scene.frame_set((frame_num)*24 + 1)
+                bpy.ops.transform.rotate(value=LThighAngle, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                bones['ThighLeft'].bone.select = False
+                Llast_thigh_angle = LThighAngle
+                
+                
+            if RThighAngle > thighAngleThreshold: 
+                bones['ThighRight'].bone.select = True
+                bpy.context.scene.frame_set((frame_num)*24 + 1)
+                bpy.ops.transform.rotate(value=RThighAngle, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                bones['ThighRight'].bone.select = False
+                Rlast_thigh_angle = RThighAngle
+                
+            print('L: ', LThighAngle)
+            print('R: ', RThighAngle)
+        
             
         return {"FINISHED"}
 
@@ -220,7 +292,6 @@ class deleteModel(bpy.types.Operator):
         bpy.ops.object.delete()
         
         return {"FINISHED"}
-    
     
         
 class addReggedModel(bpy.types.Operator):
@@ -445,11 +516,11 @@ class addReggedModel(bpy.types.Operator):
         
         return {"FINISHED"}
 
+
+#def fabrik_ik(context):
+#    print("Hello World")
     
-def fabrik_ik(context):
-    print("Hello World")   
-    
-bpy.app.handlers.frame_change_pre.append(fabrik_ik) 
+#bpy.app.handlers.frame_change_pre.pop(fabrik_ik) 
  
 def register() :
     bpy.utils.register_class(TestPanel)
