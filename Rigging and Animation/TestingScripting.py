@@ -48,7 +48,8 @@ class TestPanel(bpy.types.Panel):
     bl_category = "Test Panel"
 
     def draw(self, context):
-       self.layout.operator("mesh.import_model", icon='MESH_CUBE', text="Import Model")           
+       self.layout.operator("mesh.import_model", icon='MESH_CUBE', text="Import Model")
+       self.layout.operator("mesh.delete_model", icon='MESH_CUBE', text="Delete Model")           
        self.layout.operator("mesh.apply_ik", icon='GIZMO', text="Apply IK")  
        self.layout.operator("mesh.animate", icon='MESH_CUBE', text="Animate") 
 
@@ -73,7 +74,7 @@ class animate(bpy.types.Operator):
                      
         # Frame 0 (intial model state) -> 1
         
-        # Frame 1 -> 2
+        # Frame 1 -> 2 
         
         scn = bpy.context.scene
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
@@ -206,10 +207,25 @@ class applyIK(bpy.types.Operator):
         bpy.ops.object.posemode_toggle()            
                 
         return {"FINISHED"}
+    
+    
+class deleteModel(bpy.types.Operator):
+    bl_idname = 'mesh.delete_model'
+    bl_label = 'Delete Model'
+    bl_options = {"REGISTER", "UNDO"}
+    
+    def execute(self, context):
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.ops.object.select_all(action='SELECT')
+        bpy.ops.object.delete()
+        
+        return {"FINISHED"}
+    
+    
         
 class addReggedModel(bpy.types.Operator):
     bl_idname = 'mesh.import_model'
-    bl_label = 'Add Cube'
+    bl_label = 'Import Model'
     bl_options = {"REGISTER", "UNDO"}
     
     def readRigInfo(self, fileName):
@@ -438,12 +454,14 @@ bpy.app.handlers.frame_change_pre.append(fabrik_ik)
 def register() :
     bpy.utils.register_class(TestPanel)
     bpy.utils.register_class(addReggedModel)
+    bpy.utils.register_class(deleteModel)
     bpy.utils.register_class(applyIK)
     bpy.utils.register_class(animate)
  
 def unregister() :
     bpy.utils.unregister_class(TestPanel)
     bpy.utils.unregister_class(addReggedModel)
+    bpy.utils.unregister_class(deleteModel)
     bpy.utils.unregister_class(applyIK)
     bpy.utils.unregister_class(animate)
     
