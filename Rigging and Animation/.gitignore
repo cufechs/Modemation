@@ -1,4 +1,6 @@
 pose_ex/
+input_video/
+
 *.fbx
 
 # generic files to ignore
