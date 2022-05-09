@@ -4,6 +4,7 @@ import math
 import pathlib
 import mathutils
 import numpy as np
+from os import listdir
 from mathutils import Matrix
 
 
@@ -72,30 +73,37 @@ class animate(bpy.types.Operator):
  
     def execute(self, context):
         
-        bones_map = [['ShoulderLeft', 'LShoulder', 'LElbow'],
+        bones_map_Y = [['ShoulderLeft', 'LShoulder', 'LElbow'],
                      ['ShoulderRight', 'RShoulder', 'RElbow'],
                      ['ThighLeft', 'LHip', 'LKnee'],
                      ['ThighRight', 'RHip', 'RKnee'],
                      ['SpinalCordB4', 'Nose', 'Neck']]
                      
+        # loading pose file names sorted
+        list_json = [f for f in sorted(listdir(cf.MAIN_DIR + '\\pose_ex\\')) if (str(f))[-4:] == "json"]
         frames = []
-        frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\1_keypoints.json'))
-        frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\2_keypoints.json'))
-        frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\3_keypoints.json'))
-        frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\4_keypoints.json'))
-        frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\5_keypoints.json'))
-         
+        for file_name in list_json:
+            frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\' + file_name))
+        
                      
         # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
-
+        fps = 2
         
         scn = bpy.context.scene
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
         bones = scn.objects['Armature'].pose.bones
         scn.frame_start = 1
-        scn.frame_end = (len(frames)-1)*24 + 1
+        scn.frame_end = (len(frames)-1)*(24//fps) + 1
+
+            
+        for frame_num in range(len(frames)):
+            for x in ['LegLeft', 'LegRight']:
+                bones[x].bone.select = True
+                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                bones[x].bone.select = False
         
-        for x1,_,_ in bones_map:
+        for x1,_,_ in bones_map_Y:
             bones[x1].bone.select = True
             bpy.context.scene.frame_set(1)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
@@ -103,10 +111,10 @@ class animate(bpy.types.Operator):
             
         # XZ plane Animation
         for frame_num in range(len(frames)-1):
-            for x1,x2,x3 in bones_map:
+            for x1,x2,x3 in bones_map_Y:
                 
                 bones[x1].bone.select = True  
-                bpy.context.scene.frame_set((frame_num+1)*24 + 1)
+                bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
                 
                 angel_diff = cf.getAngle_2pts(frames[frame_num+1][x2][:-1], frames[frame_num+1][x3][:-1]) - cf.getAngle_2pts(frames[frame_num][x2][:-1], frames[frame_num][x3][:-1])
                 bpy.ops.transform.rotate(value=angel_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
@@ -115,63 +123,39 @@ class animate(bpy.types.Operator):
                 bones[x1].bone.select = False
                 
         # legs (to front) Animation
-        thighAngleThreshold = 0.5
+        thighAngleThreshold = 0.6
         
+        # bones_map_X = [bone in armature, point 1 in pose, point 2 in pose, rotation direction, max length, is child flag]
+        bones_map_X = [['ThighLeft', 'LHip', 'LKnee', 1, 0, False], 
+                        ['LegLeft', 'LKnee', 'LAnkle', -1, 0, True],
+                        ['ThighRight', 'RHip', 'RKnee', 1, 0, False],
+                        ['LegRight', 'RKnee', 'RAnkle', -1, 0, True]]
         
-        Lmax_thigh_length = 0
-        Rmax_thigh_length = 0
         for frame_num in range(len(frames)):
-            L_thigh_length = cf.getDistance_2pts(frames[frame_num]['LHip'][:-1], frames[frame_num]['LKnee'][:-1])
-            R_thigh_length = cf.getDistance_2pts(frames[frame_num]['RHip'][:-1], frames[frame_num]['RKnee'][:-1])
-            if L_thigh_length > Lmax_thigh_length: Lmax_thigh_length = L_thigh_length
-            if R_thigh_length > Rmax_thigh_length: Rmax_thigh_length = R_thigh_length
-            
-        Llast_thigh_angle = 0
-        Rlast_thigh_angle = 0
+            for i in range(len(bones_map_X)):
+                bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_X[i][1]][:-1], frames[frame_num][bones_map_X[i][2]][:-1])
+                if bone_length > bones_map_X[i][4]: bones_map_X[i][4] = bone_length
+
+        perant_angle = 0
         for frame_num in range(1,len(frames)):
-            L_thigh_length = cf.getDistance_2pts(frames[frame_num]['LHip'][:-1], frames[frame_num]['LKnee'][:-1])
-            R_thigh_length = cf.getDistance_2pts(frames[frame_num]['RHip'][:-1], frames[frame_num]['RKnee'][:-1])
-            LThighAngle = cf.getThighAngle(Lmax_thigh_length, L_thigh_length)
-            RThighAngle = cf.getThighAngle(Rmax_thigh_length, R_thigh_length)
+            for i in range(len(bones_map_X)):
+                bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_X[i][1]][:-1], frames[frame_num][bones_map_X[i][2]][:-1])
+                Angle = cf.getThighAngle(bones_map_X[i][4], bone_length)
+                if bones_map_X[i][5]: Angle -= perant_angle/2 # only subtracting it's half as when the thigh is pushed forward same goes for the shin, it gets nearer to the camera and appears longer in the pose values
+                print(bones_map_X[i][0], ': ', Angle)
+                
+                Angle = 0 if Angle < 0 else Angle
             
-            '''if Llast_thigh_angle != 0:             
-                bones['ThighLeft'].bone.select = True
-                bpy.context.scene.frame_set((frame_num)*24 + 1)
-                bpy.ops.transform.rotate(value=-Llast_thigh_angle, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-                bones['ThighLeft'].bone.select = False
-                Llast_thigh_angle = 0
+                if Angle > thighAngleThreshold: 
+                    bones[bones_map_X[i][0]].bone.select = True
+                    bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
+                    bpy.ops.transform.rotate(value=Angle * bones_map_X[i][3], orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                    bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                    bones[bones_map_X[i][0]].bone.select = False
+                    
+                perant_angle = Angle
                 
-            if Rlast_thigh_angle != 0: 
-                bones['ThighRight'].bone.select = True
-                bpy.context.scene.frame_set((frame_num)*24 + 1)
-                bpy.ops.transform.rotate(value=-Rlast_thigh_angle, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-                bones['ThighRight'].bone.select = False
-                Rlast_thigh_angle = 0'''
-                
-                
-            if LThighAngle > thighAngleThreshold: 
-                bones['ThighLeft'].bone.select = True
-                bpy.context.scene.frame_set((frame_num)*24 + 1)
-                bpy.ops.transform.rotate(value=LThighAngle, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-                bones['ThighLeft'].bone.select = False
-                Llast_thigh_angle = LThighAngle
-                
-                
-            if RThighAngle > thighAngleThreshold: 
-                bones['ThighRight'].bone.select = True
-                bpy.context.scene.frame_set((frame_num)*24 + 1)
-                bpy.ops.transform.rotate(value=RThighAngle, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-                bones['ThighRight'].bone.select = False
-                Rlast_thigh_angle = RThighAngle
-                
-            print('L: ', LThighAngle)
-            print('R: ', RThighAngle)
         
-            
         return {"FINISHED"}
 
 
@@ -517,11 +501,6 @@ class addReggedModel(bpy.types.Operator):
         return {"FINISHED"}
 
 
-#def fabrik_ik(context):
-#    print("Hello World")
-    
-#bpy.app.handlers.frame_change_pre.pop(fabrik_ik) 
- 
 def register() :
     bpy.utils.register_class(TestPanel)
     bpy.utils.register_class(addReggedModel)
