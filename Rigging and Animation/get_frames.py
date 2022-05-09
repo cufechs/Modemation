@@ -1,6 +1,13 @@
 import os
 import cv2
 from math import floor
+import argparse
+
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-mfps", "-min_frame_sec", default=4, type=int, help="frames to extract per second")
+args = vars(ap.parse_args())
+
 
 if __name__ == '__main__' :
 
@@ -12,15 +19,17 @@ if __name__ == '__main__' :
         for f in os.listdir('frames'):
             os.remove(os.path.join('frames', f))
 
+    # get video file name
     list_mp4s = [f for f in sorted(os.listdir('input_video/')) if ((str(f))[-3:] == "mp4" or (str(f))[-3:] == "mp4")]
     vidcap = cv2.VideoCapture('input_video/' + list_mp4s[0])
 
+    min_fps = args['mfps']
 
     fps = vidcap.get(cv2.CAP_PROP_FPS)
     frames_count = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
     duration = frames_count/fps
 
-    frames = floor(duration*4)
+    frames = floor(duration*min_fps)
     frames_gap = frames_count // frames
     frames_taken = frames_count // frames_gap
     frames_dropped = (frames_count-1) % frames_gap
