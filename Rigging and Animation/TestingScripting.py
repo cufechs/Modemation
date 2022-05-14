@@ -80,14 +80,14 @@ class animate(bpy.types.Operator):
                      ['SpinalCordB4', 'Nose', 'Neck']]
                      
         # loading pose file names sorted
-        list_json = [f for f in sorted(listdir(cf.MAIN_DIR + '\\pose_ex\\')) if (str(f))[-4:] == "json"]
+        list_json = [f for f in sorted(listdir(cf.MAIN_DIR + '\\frames\\pose\\')) if (str(f))[-4:] == "json"]
         frames = []
         for file_name in list_json:
-            frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\pose_ex\\' + file_name))
+            frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\frames\\pose\\' + file_name))
         
                      
         # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
-        fps = 2
+        fps = round(2.990353697749196)
         
         scn = bpy.context.scene
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
