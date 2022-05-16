@@ -29,6 +29,16 @@ class cf(): # common functions
             Dict[Map[i]] = [arr[j], 1-arr[j+1], arr[j+2]]
             
         return Dict
+    
+    @staticmethod
+    def load_frames_pose(Dir):
+        list_json_raw = listdir(cf.MAIN_DIR + Dir)
+        list_json = [('frame' + str(i+1) + '_keypoints.json') for i in range(len(list_json_raw)) if (str(list_json_raw[i]))[-4:] == "json"]
+        frames = []
+        for file_name in list_json:
+            frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir + file_name))
+            
+        return frames
 
     @staticmethod
     def getAngle_2pts(p1, p2, degree=False):
@@ -80,11 +90,8 @@ class animate(bpy.types.Operator):
                      ['SpinalCordB4', 'Nose', 'Neck']]
                      
         # loading pose file names sorted
-        list_json = [f for f in sorted(listdir(cf.MAIN_DIR + '\\frames\\pose\\')) if (str(f))[-4:] == "json"]
-        frames = []
-        for file_name in list_json:
-            frames.append(cf.parse_pose_25(cf.MAIN_DIR + '\\frames\\pose\\' + file_name))
-        
+        frames = cf.load_frames_pose('\\frames\\pose\\')
+
                      
         # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
         fps = round(2.990353697749196)
@@ -142,7 +149,7 @@ class animate(bpy.types.Operator):
                 bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_X[i][1]][:-1], frames[frame_num][bones_map_X[i][2]][:-1])
                 Angle = cf.getThighAngle(bones_map_X[i][4], bone_length)
                 if bones_map_X[i][5]: Angle -= perant_angle/2 # only subtracting it's half as when the thigh is pushed forward same goes for the shin, it gets nearer to the camera and appears longer in the pose values
-                print(bones_map_X[i][0], ': ', Angle)
+                #print(bones_map_X[i][0], ': ', Angle)
                 
                 Angle = 0 if Angle < 0 else Angle
             
