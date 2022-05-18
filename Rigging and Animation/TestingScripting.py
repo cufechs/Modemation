@@ -11,33 +11,47 @@ from mathutils import Matrix
 class cf(): # common functions
     
     MAIN_DIR = str(pathlib.Path(__file__).parent.parent.resolve())
-    
-    @staticmethod
-    def parse_pose_25(Dir):
-        
-        f = open(Dir)
-        data = json.load(f)
-        arr = data['people'][0]['pose_keypoints_2d']
-        Map = ['Nose', 'Neck', 'RShoulder', 'RElbow' ,'RWrist', 'LShoulder',
+    JOINTS_MAP = ['Nose', 'Neck', 'RShoulder', 'RElbow' ,'RWrist', 'LShoulder',
                'LElbow', 'LWrist', 'MidHip', 'RHip', 'RKnee', 'RAnkle', 'LHip',
                'LKnee', 'LAnkle', 'REye', 'LEye', 'REar', 'LEar', 'LBigToe',
                'LSmallToe', 'LHeel', 'RBigToe', 'RSmallToe', 'RHeel']
+    
+    @staticmethod
+    def parse_pose_25(Dir):
+        f = open(Dir)
+        data = json.load(f)
+        arr = data['people'][0]['pose_keypoints_2d']
 
         Dict = {}
         for i in range(25):
             j=i*3
-            Dict[Map[i]] = [arr[j], 1-arr[j+1], arr[j+2]]
+            Dict[cf.JOINTS_MAP[i]] = [arr[j], 1-arr[j+1], arr[j+2]]
             
         return Dict
-    
+
     @staticmethod
-    def load_frames_pose(Dir):
-        list_json_raw = listdir(cf.MAIN_DIR + Dir)
+    def load_frames_pose(Dir_pose = '\\frames\\pose\\', Dir_fps = '\\frames\\my_fps.txt'):     
+        list_json_raw = listdir(cf.MAIN_DIR + Dir_pose)
         list_json = [('frame' + str(i+1) + '_keypoints.json') for i in range(len(list_json_raw)) if (str(list_json_raw[i]))[-4:] == "json"]
         frames = []
         for file_name in list_json:
-            frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir + file_name))
+            frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir_pose + file_name))
+
+        f = open(cf.MAIN_DIR + Dir_fps)
+        fps = f.read()
+        fps = float(fps)
+        f.close()
+         
+        cf.fix_unseen_joints(frames)
             
+        return frames, fps
+
+    @staticmethod
+    def fix_unseen_joints(frames):
+        for i in range(len(frames)):
+            for joint in cf.JOINTS_MAP:
+                if frames[i][joint][-1] == 0:
+                    frames[i][joint] = frames[i-1][joint]
         return frames
 
     @staticmethod
@@ -62,6 +76,8 @@ class cf(): # common functions
             angle = math.degrees(angle)
             
         return angle
+    
+    
 
 class TestPanel(bpy.types.Panel):
     bl_label = "Test Panel"
@@ -73,7 +89,6 @@ class TestPanel(bpy.types.Panel):
     def draw(self, context):
        self.layout.operator("mesh.import_model", icon='MESH_CUBE', text="Import Model")
        self.layout.operator("mesh.delete_model", icon='MESH_CUBE', text="Delete Model")           
-       self.layout.operator("mesh.apply_ik", icon='GIZMO', text="Apply IK")  
        self.layout.operator("mesh.animate", icon='MESH_CUBE', text="Animate") 
 
 class animate(bpy.types.Operator):
@@ -87,14 +102,15 @@ class animate(bpy.types.Operator):
                      ['ShoulderRight', 'RShoulder', 'RElbow'],
                      ['ThighLeft', 'LHip', 'LKnee'],
                      ['ThighRight', 'RHip', 'RKnee'],
-                     ['SpinalCordB4', 'Nose', 'Neck']]
+                     ['SpinalCordB4', 'REar', 'LEar']]
                      
         # loading pose file names sorted
-        frames = cf.load_frames_pose('\\frames\\pose\\')
+        frames, fps = cf.load_frames_pose()
 
                      
         # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
-        fps = round(2.990353697749196)
+        
+        fps = round(fps)
         
         scn = bpy.context.scene
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
@@ -104,6 +120,7 @@ class animate(bpy.types.Operator):
 
             
         for frame_num in range(len(frames)):
+            # Saving legs rotation in frames 
             for x in ['LegLeft', 'LegRight']:
                 bones[x].bone.select = True
                 bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
@@ -111,6 +128,8 @@ class animate(bpy.types.Operator):
                 bones[x].bone.select = False
         
         for x1,_,_ in bones_map_Y:
+            # Setting the first frame as the intial model pose 
+            # TODO: Solve it 
             bones[x1].bone.select = True
             bpy.context.scene.frame_set(1)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
@@ -130,7 +149,7 @@ class animate(bpy.types.Operator):
                 bones[x1].bone.select = False
                 
         # legs (to front) Animation
-        thighAngleThreshold = 0.6
+        thighAngleThreshold = 0.6 # in pi
         
         # bones_map_X = [bone in armature, point 1 in pose, point 2 in pose, rotation direction, max length, is child flag]
         bones_map_X = [['ThighLeft', 'LHip', 'LKnee', 1, 0, False], 
@@ -141,7 +160,8 @@ class animate(bpy.types.Operator):
         for frame_num in range(len(frames)):
             for i in range(len(bones_map_X)):
                 bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_X[i][1]][:-1], frames[frame_num][bones_map_X[i][2]][:-1])
-                if bone_length > bones_map_X[i][4]: bones_map_X[i][4] = bone_length
+                if bone_length > bones_map_X[i][4] and frames[frame_num][bones_map_X[i][1]][-1] != 0 and frames[frame_num][bones_map_X[i][2]][-1] != 0:
+                    bones_map_X[i][4] = bone_length
 
         perant_angle = 0
         for frame_num in range(1,len(frames)):
@@ -161,117 +181,10 @@ class animate(bpy.types.Operator):
                     bones[bones_map_X[i][0]].bone.select = False
                     
                 perant_angle = Angle
-                
-        
-        return {"FINISHED"}
 
-
-class applyIK(bpy.types.Operator):
-    bl_idname = 'mesh.apply_ik'
-    bl_label = 'Apply IK'
-    bl_options = {"REGISTER", "UNDO"}
- 
-    def normalize(self, vect):
-        val = np.array(vect)
-        return val / np.linalg.norm(val)
- 
-    def execute(self, context):
-        
-        '''
-        selected_ob = bpy.data.objects['Armature']
-        
-        if selected_ob != None:
-            bpy.ops.object.mode_set(mode='POSE', toggle=False)
-            bones = selected_ob.pose.bones
-        
-            fistLeft = bones["FistLeft"] #target
-            handLeft = bones["HandLeft"]
-            shoulderLeft = bones["ShoulderLeft"]
-            
-            #applying FABRIK algorithm
-            noOfIterations = 15
-            convergenceDist = 0.001 #depends on the size of the model
-            
-            print(handLeft.head)
-            distBetweenBones = np.linalg.norm(np.array(shoulderLeft.tail) - np.array(handLeft.head))
-            totalArmLength = handLeft.length + shoulderLeft.length + distBetweenBones
-            
-            areBonesExtended = totalArmLength <= np.linalg.norm(np.array(shoulderLeft.head) - np.array(fistLeft.head))
-            
-            #bpy.ops.object.mode_set(mode='POSE', toggle=False)
-            
-            #bpy.ops.transform.rotate(value=3.14 / 2.0, orient_axis='X', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)))
-            if areBonesExtended: #stretch bones
-                
-                #bpy.ops.object.mode_set(mode='EDIT', toggle=False)
-                #selected_ob.data.edit_bones["FistLeft"].parent = None
-                #bpy.ops.object.mode_set(mode='POSE', toggle=False)
-
-                # Left Shoulder
-                v = fistLeft.head - shoulderLeft.head
-                bv = shoulderLeft.tail - shoulderLeft.head
-
-                rd = bv.rotation_difference(v)
-
-                M = (
-                    Matrix.Translation(shoulderLeft.head) @
-                    rd.to_matrix().to_4x4() @
-                    Matrix.Translation(-shoulderLeft.head)
-                )
-                shoulderLeft.matrix = M @ shoulderLeft.matrix
-                
-                # Left Hand
-                v = fistLeft.head - shoulderLeft.head
-                bv = shoulderLeft.tail - shoulderLeft.head
-
-                rd = bv.rotation_difference(v)
-
-                M = (
-                    Matrix.Translation(shoulderLeft.head) @
-                    rd.to_matrix().to_4x4() @
-                    Matrix.Translation(-shoulderLeft.head)
-                )
-                shoulderLeft.matrix = M @ shoulderLeft.matrix
-        '''
-        
-        scn = bpy.context.scene
-        bpy.ops.object.mode_set(mode='POSE', toggle=False)
-        bones = scn.objects['Armature'].pose.bones
-        bones["ShoulderLeft"].bone.select = True
-        
-        scn.frame_start = 1
-        scn.frame_end = 120
-        bpy.context.scene.frame_set(1)
-        bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-        bpy.context.scene.frame_set(100)
-        bpy.ops.transform.rotate(value=-1.42241, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-        bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-
-        bones["ShoulderLeft"].bone.select = False
-        bones["HandLeft"].bone.select = True
-        
-        bpy.context.scene.frame_set(1)
-        bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-        bpy.context.scene.frame_set(100)
-        bpy.ops.transform.rotate(value=-1.58124, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-        bpy.ops.transform.rotate(value=-1.05258, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-        bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-        
-        bones["HandLeft"].bone.select = False
-        bones["FistLeft"].bone.select = True
-        
-        bpy.context.scene.frame_set(1)
-        bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-        bpy.context.scene.frame_set(100)
-        bpy.ops.transform.rotate(value=-1.39506, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-        bpy.ops.transform.rotate(value=-1.21232, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-        bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-        
-        bpy.ops.object.posemode_toggle()            
-                
         return {"FINISHED"}
     
-    
+     
 class deleteModel(bpy.types.Operator):
     bl_idname = 'mesh.delete_model'
     bl_label = 'Delete Model'
@@ -512,14 +425,12 @@ def register() :
     bpy.utils.register_class(TestPanel)
     bpy.utils.register_class(addReggedModel)
     bpy.utils.register_class(deleteModel)
-    bpy.utils.register_class(applyIK)
     bpy.utils.register_class(animate)
  
 def unregister() :
     bpy.utils.unregister_class(TestPanel)
     bpy.utils.unregister_class(addReggedModel)
     bpy.utils.unregister_class(deleteModel)
-    bpy.utils.unregister_class(applyIK)
     bpy.utils.unregister_class(animate)
     
 if __name__ == "__main__":
