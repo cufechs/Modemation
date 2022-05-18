@@ -101,8 +101,7 @@ class animate(bpy.types.Operator):
         bones_map_Y = [['ShoulderLeft', 'LShoulder', 'LElbow'],
                      ['ShoulderRight', 'RShoulder', 'RElbow'],
                      ['ThighLeft', 'LHip', 'LKnee'],
-                     ['ThighRight', 'RHip', 'RKnee'],
-                     ['SpinalCordB4', 'REar', 'LEar']]
+                     ['ThighRight', 'RHip', 'RKnee']]
                      
         # loading pose file names sorted
         frames, fps = cf.load_frames_pose()
@@ -120,8 +119,8 @@ class animate(bpy.types.Operator):
 
             
         for frame_num in range(len(frames)):
-            # Saving legs rotation in frames 
-            for x in ['LegLeft', 'LegRight']:
+            # Saving legs and neck rotation in frames 
+            for x in ['LegLeft', 'LegRight', 'SpinalCordB4']:
                 bones[x].bone.select = True
                 bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
@@ -134,6 +133,7 @@ class animate(bpy.types.Operator):
             bpy.context.scene.frame_set(1)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1].bone.select = False
+        
             
         # XZ plane Animation
         for frame_num in range(len(frames)-1):
@@ -147,6 +147,27 @@ class animate(bpy.types.Operator):
 
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 bones[x1].bone.select = False
+
+        # Head Rotations
+        for frame_num, frame in enumerate(frames):
+            bones['SpinalCordB4'].bone.select = True  
+            bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
+            
+            # Y-axis rotation
+            angel_diff = cf.getAngle_2pts(frame['REar'][:-1], frame['LEar'][:-1])
+            bpy.ops.transform.rotate(value=angel_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+
+            # Z-axis rotation
+            if abs(angel_diff) < math.radians(15):
+                angel_diff2 = cf.getAngle_2pts(frame['Nose'][:-1], frame['Neck'][:-1]) + math.radians(90)
+                angel_diff2 *= 2
+                bpy.ops.transform.rotate(value=angel_diff2, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+
+
+
+            bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+            bones['SpinalCordB4'].bone.select = False
+        
                 
         # legs (to front) Animation
         thighAngleThreshold = 0.6 # in pi
@@ -210,7 +231,7 @@ class addReggedModel(bpy.types.Operator):
         return rigInfo
     
     def import_model(context):
-        bpy.ops.import_mesh.stl(filepath = (str(pathlib.Path(__file__).parent.parent.resolve()) + "\\Mesh.stl"))
+        bpy.ops.import_mesh.stl(filepath = (cf.MAIN_DIR) + "\\Mesh.stl")
         
     def add_armature(context,self):
         model = bpy.context.active_object #get the armature object
@@ -224,8 +245,8 @@ class addReggedModel(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         ebs = obArm.data.edit_bones
 
-        rigInfo = self.readRigInfo((str(pathlib.Path(__file__).parent.parent.resolve()) + "\\RigInfo.json"))
-        
+        rigInfo = self.readRigInfo(cf.MAIN_DIR + "\\RigInfo.json")
+    
         keypoints = {}
         
         for keypoint in rigInfo:
@@ -259,7 +280,7 @@ class addReggedModel(bpy.types.Operator):
         headBoneDirection = (np.array(headBone.tail) - np.array(headBone.head)) / math.sqrt(sum(i**2 for i in (np.array(headBone.tail) - np.array(headBone.head))))
         headBone.head = mathutils.Vector(np.array(headBone.tail) - boneMagnitude * headBoneDirection)
         #headBone.use_connect = True
-        
+
         spinalCordBone4 = ebs.new("SpinalCordB4")
         spinalCordBone4.head = spinalCordBone2.children[0].children[0].tail
         spinalCordBone4.tail = headBone.head
