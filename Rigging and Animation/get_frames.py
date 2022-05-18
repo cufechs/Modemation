@@ -41,7 +41,8 @@ if __name__ == '__main__' :
     while success:    
         if gap == 0:
             frames_count += 1
-            cv2.imwrite("frames/frame%d.jpg" % frames_count, image)     # save frame as JPG file      
+            resized_image = cv2.resize(image, (1280, 720), interpolation = cv2.INTER_AREA)
+            cv2.imwrite("frames/frame%d.jpg" % frames_count, resized_image)     # save frame as JPG file      
             success, image = vidcap.read()
             gap += frames_gap-1
             continue
