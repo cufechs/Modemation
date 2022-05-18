@@ -48,6 +48,7 @@ class cf(): # common functions
 
     @staticmethod
     def fix_unseen_joints(frames):
+        # TODO: make it more general
         for i in range(len(frames)):
             for joint in cf.JOINTS_MAP:
                 if frames[i][joint][-1] == 0:
@@ -103,13 +104,11 @@ class animate(bpy.types.Operator):
                      ['ThighLeft', 'LHip', 'LKnee'],
                      ['ThighRight', 'RHip', 'RKnee']]
                      
-        # loading pose file names sorted
+        # loading frames and downsampled fps
         frames, fps = cf.load_frames_pose()
-
-                     
-        # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
-        
         fps = round(fps)
+        
+        
         
         scn = bpy.context.scene
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
@@ -128,17 +127,16 @@ class animate(bpy.types.Operator):
         
         for x1,_,_ in bones_map_Y:
             # Setting the first frame as the intial model pose 
-            # TODO: Solve it 
+            # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
             bones[x1].bone.select = True
             bpy.context.scene.frame_set(1)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1].bone.select = False
         
             
-        # XZ plane Animation
+        # XZ plane Animation 
         for frame_num in range(len(frames)-1):
             for x1,x2,x3 in bones_map_Y:
-                
                 bones[x1].bone.select = True  
                 bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
                 
@@ -148,29 +146,49 @@ class animate(bpy.types.Operator):
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 bones[x1].bone.select = False
 
+
         # Head Rotations
+        xAxis_rotation = list(np.zeros(len(frames)))
+        
         for frame_num, frame in enumerate(frames):
             bones['SpinalCordB4'].bone.select = True  
             bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
             
             # Y-axis rotation
-            angel_diff = cf.getAngle_2pts(frame['REar'][:-1], frame['LEar'][:-1])
-            bpy.ops.transform.rotate(value=angel_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+            angle_diff = cf.getAngle_2pts(frame['REar'][:-1], frame['LEar'][:-1])
+            if abs(angle_diff) > math.radians(5):
+                bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
 
             # Z-axis rotation
-            if abs(angel_diff) < math.radians(15):
-                angel_diff2 = cf.getAngle_2pts(frame['Nose'][:-1], frame['Neck'][:-1]) + math.radians(90)
-                angel_diff2 *= 2
-                bpy.ops.transform.rotate(value=angel_diff2, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+            if abs(angle_diff) < math.radians(15):
+                angle_diff2 = cf.getAngle_2pts(frame['Nose'][:-1], frame['Neck'][:-1]) + math.radians(90)
+                angle_diff2 *= 2
+                bpy.ops.transform.rotate(value=angle_diff2, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
 
-
+            # X-axis rotation (pre rotation)
+            if abs(angle_diff) < math.radians(5) and abs(angle_diff2) < math.radians(5):
+                xAxis_rotation[frame_num] = cf.getDistance_2pts(frame['Nose'][:-1], frame['Neck'][:-1])
 
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones['SpinalCordB4'].bone.select = False
-        
+            
+        # X-axis rotation
+        for frame_num in range(len(frames)):
+            bones['SpinalCordB4'].bone.select = True  
+            bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
+            
+            if xAxis_rotation[frame_num] != 0:
+                # negative the angle to tilt the head forward
+                angle_x = -cf.getThighAngle(max(xAxis_rotation), xAxis_rotation[frame_num])
+                bpy.ops.transform.rotate(value=angle_x, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+            
+            bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+            bones['SpinalCordB4'].bone.select = False
+            
+            
                 
-        # legs (to front) Animation
-        thighAngleThreshold = 0.6 # in pi
+        # legs (to front& back) Animation
+        thighAngleThreshold = math.radians(35)
         
         # bones_map_X = [bone in armature, point 1 in pose, point 2 in pose, rotation direction, max length, is child flag]
         bones_map_X = [['ThighLeft', 'LHip', 'LKnee', 1, 0, False], 
