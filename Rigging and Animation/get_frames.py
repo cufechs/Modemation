@@ -6,6 +6,7 @@ import argparse
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-mfps", "-min_frame_sec", default=4, type=int, help="frames to extract per second")
+ap.add_argument("-rf", "-resize_factor", default=1, type=float, help="resizeing factor, 1 -> 1280x720 & 2 -> 640x360")
 args = vars(ap.parse_args())
 
 
@@ -24,7 +25,8 @@ if __name__ == '__main__' :
     vidcap = cv2.VideoCapture('input_video/' + list_mp4s[0])
 
     min_fps = args['mfps']
-
+    resize_factor = args['rf']
+    
     fps = vidcap.get(cv2.CAP_PROP_FPS)
     frames_count = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
     duration = frames_count/fps
@@ -41,7 +43,7 @@ if __name__ == '__main__' :
     while success:    
         if gap == 0:
             frames_count += 1
-            resized_image = cv2.resize(image, (1280, 720), interpolation = cv2.INTER_AREA)
+            resized_image = cv2.resize(image, (1280//resize_factor, 720//resize_factor), interpolation = cv2.INTER_NEAREST)
             cv2.imwrite("frames/frame%d.jpg" % frames_count, resized_image)     # save frame as JPG file      
             success, image = vidcap.read()
             gap += frames_gap-1
