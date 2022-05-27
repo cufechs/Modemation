@@ -191,7 +191,7 @@ class animate(bpy.types.Operator):
 
             # Z-axis rotation
             if abs(angle_diff) < math.radians(15):
-                angle_diff2 = cf.getAngle_2pts(frame['Nose'][:-1], frame['Neck'][:-1]) + math.radians(90)
+                angle_diff2 = -cf.getAngle_2pts(frame['Nose'][:-1], frame['Neck'][:-1]) + math.radians(90)
                 angle_diff2 *= 2
                 bpy.ops.transform.rotate(value=angle_diff2, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
 
@@ -210,8 +210,9 @@ class animate(bpy.types.Operator):
             if xAxis_rotation[frame_num] != 0:
                 # negative the angle to tilt the head forward
                 angle_x = -cf.getThighAngle(max(xAxis_rotation), xAxis_rotation[frame_num])
-                bpy.ops.transform.rotate(value=angle_x, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-
+                if abs(angle_x) > math.radians(20):
+                    bpy.ops.transform.rotate(value=angle_x, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+            
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones['SpinalCordB4'].bone.select = False
         ###################################################################
