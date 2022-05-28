@@ -53,7 +53,7 @@ if __name__ == '__main__' :
         gap -= 1
     
     #saving my_fps in my_fps.txt
-    f = open("frames/my_fps.txt", "a")
+    f = open("frames/pose/my_fps.txt", "a")
     f.write(str(my_fps))
     f.close()
    

@@ -30,14 +30,14 @@ class cf(): # common functions
         return Dict
 
     @staticmethod
-    def load_frames_pose(Dir_pose = '\\frames\\pose\\', Dir_fps = '\\frames\\my_fps.txt'):     
+    def load_frames_pose(Dir_pose = '\\frames\\pose\\'):     
         list_json_raw = listdir(cf.MAIN_DIR + Dir_pose)
-        list_json = [('frame' + str(i+1) + '_keypoints.json') for i in range(len(list_json_raw)) if (str(list_json_raw[i]))[-4:] == "json"]
+        list_json = [('frame' + str(i+1) + '_keypoints.json') for i in range(len(list_json_raw)-1) if (str(list_json_raw[i]))[-4:] == "json"]
         frames = []
         for file_name in list_json:
             frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir_pose + file_name))
 
-        f = open(cf.MAIN_DIR + Dir_fps)
+        f = open(cf.MAIN_DIR + Dir_pose + '\\my_fps.txt')
         fps = f.read()
         fps = float(fps)
         f.close()
@@ -189,7 +189,7 @@ class animate(bpy.types.Operator):
             if abs(angle_diff) > math.radians(5):
                 bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
 
-            # Z-axis rotation
+            # Z-axis rotation 
             if abs(angle_diff) < math.radians(15):
                 angle_diff2 = -cf.getAngle_2pts(frame['Nose'][:-1], frame['Neck'][:-1]) + math.radians(90)
                 angle_diff2 *= 2
