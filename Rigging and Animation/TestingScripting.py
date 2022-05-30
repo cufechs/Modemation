@@ -281,21 +281,21 @@ class addReggedModel(bpy.types.Operator):
         return rigInfo
     
     def import_model(context):
-        bpy.ops.import_mesh.stl(filepath = (cf.MAIN_DIR) + "\\Mesh.stl")
+        bpy.ops.import_scene.obj(filepath = (cf.MAIN_DIR) + "\\1_human.obj")
         
     def add_armature(context,self):
         model = bpy.context.active_object #get the armature object
-        print(model.name)
-        print(model.location)
+        #print(model.name)
+        #print(model.location)
         bpy.ops.object.add(type = "ARMATURE")
         
         obArm = bpy.context.active_object #get the armature object
-        obArm.location = model.location
-        obArm.rotation_euler = model.rotation_euler
+        #obArm.location = model.location
+        #obArm.rotation_euler = model.rotation_euler
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         ebs = obArm.data.edit_bones
 
-        rigInfo = self.readRigInfo(cf.MAIN_DIR + "\\RigInfo.json")
+        rigInfo = self.readRigInfo(cf.MAIN_DIR + "\\landmarks_v1.json")
     
         keypoints = {}
         

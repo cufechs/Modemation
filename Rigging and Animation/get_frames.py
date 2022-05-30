@@ -1,4 +1,6 @@
 import os
+import shutil
+import pathlib
 import cv2
 from math import floor
 import argparse
@@ -6,19 +8,26 @@ import argparse
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-mfps", "-min_frame_sec", default=4, type=int, help="frames to extract per second")
-ap.add_argument("-rf", "-resize_factor", default=1, type=float, help="resizeing factor, 1 -> 1280x720 & 2 -> 640x360")
+ap.add_argument("-rf", "-resize_factor", default=1, type=int, help="resizeing factor, 1 -> 1280x720 & 2 -> 640x360")
 args = vars(ap.parse_args())
 
 
 if __name__ == '__main__' :
 
+    MAIN_DIR = str(pathlib.Path(__file__).parent.resolve())
+
     # create 'frames' dir if not there, and if there flush it
     try: 
+        shutil.rmtree(os.path.join(MAIN_DIR, 'frames'))
+    finally:
         os.mkdir('frames') 
-    except OSError as error:
-        # flush dir 'frames'
-        for f in os.listdir('frames'):
-            os.remove(os.path.join('frames', f))
+        os.mkdir('frames/pose') 
+
+    try: 
+        shutil.rmtree(os.path.join(MAIN_DIR, 'openpose/frames'))
+    finally:
+        pass
+
 
     # get video file name
     list_mp4s = [f for f in sorted(os.listdir('input_video/')) if ((str(f))[-3:] == "mp4" or (str(f))[-3:] == "mp4")]
