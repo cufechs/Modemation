@@ -78,7 +78,7 @@ class cf(): # common functions
 
         return angle
 
-
+    
 
 class TestPanel(bpy.types.Panel):
     bl_label = "Test Panel"
@@ -98,11 +98,14 @@ class animate(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-
+        
+        initial_frame = cf.parse_pose_25(cf.MAIN_DIR + '\\initialModelPose.json')
         bones_map_Y = [['ShoulderLeft', 'LShoulder', 'LElbow'],
                      ['ShoulderRight', 'RShoulder', 'RElbow'],
                      ['ThighLeft', 'LHip', 'LKnee'],
                      ['ThighRight', 'RHip', 'RKnee']]
+        bones_map_elbow = [['HandLeft', 'LElbow', 'LWrist'],
+                     ['HandRight', 'RElbow', 'RWrist']]
 
         # loading frames and downsampled fps
         frames, fps = cf.load_frames_pose()
@@ -125,20 +128,7 @@ class animate(bpy.types.Operator):
                 bones[x].bone.select = False
         
         
-        '''        
-        for x1,_,_ in bones_map_Y:
-            # Setting the first frame as the intial model pose 
-            # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
-            bones[x1].bone.select = True
-            bpy.context.scene.frame_set(1)
-            bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-            bones[x1].bone.select = False
-        '''
-
-
-        
-        # Attempting to translate the models initial pose to frame 1 pose
-        initial_frame = cf.parse_pose_25(cf.MAIN_DIR + '\\initialModelPose.json')
+        # Translating the models initial pose to frame 1 pose
         for x1,x2,x3 in bones_map_Y:
             bones[x1].bone.select = True  
             bpy.context.scene.frame_set(1)
@@ -161,6 +151,22 @@ class animate(bpy.types.Operator):
 
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 bones[x1].bone.select = False
+                
+        
+        # XZ plane Elbow Animation 
+        for frame_num in range(len(frames)-1):
+            for i,(x1,x2,x3) in enumerate(bones_map_elbow):
+                bones[x1].bone.select = True  
+                bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
+                
+                angle_diff = cf.getAngle_2pts(frames[frame_num+1][x2][:-1], frames[frame_num+1][x3][:-1]) - cf.getAngle_2pts(frames[frame_num][x2][:-1], frames[frame_num][x3][:-1])
+                angle_diff_shoulder = cf.getAngle_2pts(frames[frame_num+1][bones_map_Y[i][1]][:-1], frames[frame_num+1][bones_map_Y[i][2]][:-1]) - cf.getAngle_2pts(frames[frame_num][bones_map_Y[i][1]][:-1], frames[frame_num][bones_map_Y[i][2]][:-1])
+                angle_diff -= angle_diff_shoulder
+                bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                bones[x1].bone.select = False
+        
 
 
         ####### Head Rotations ############################################
