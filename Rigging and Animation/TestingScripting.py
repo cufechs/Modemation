@@ -138,30 +138,16 @@ class animate(bpy.types.Operator):
 
         
         # Attempting to translate the models initial pose to frame 1 pose
+        initial_frame = cf.parse_pose_25(cf.MAIN_DIR + '\\initialModelPose.json')
         for x1,x2,x3 in bones_map_Y:
-            # Setting the first frame as the intial model pose 
-            # TODO: Frame 0 (intial model state) -> Frame 1 (intial animation state)
-            bones[x1].bone.select = True
+            bones[x1].bone.select = True  
             bpy.context.scene.frame_set(1)
             
-            #intial_angle = cf.getAngle_2pts(list(bones[x1].bone.tail)[::2], list(bones[x1].bone.head)[::2], degree=True)
-            
-            # Correct for ShoulderRight
-            intial_angle = cf.getAngle_2pts([-list(bones[x1].bone.tail)[0], list(bones[x1].bone.tail)[2]], [-list(bones[x1].bone.head)[0], list(bones[x1].bone.head)[2]], degree=False)
-            
-            fream1_angle = cf.getAngle_2pts(frames[0][x3][:-1], frames[0][x2][:-1], degree=False)
-            #print(x1, intial_angle, fream1_angle)
-            
-            #print(x1, [-list(bones[x1].bone.tail)[0]+armature.worldPosition, list(bones[x1].bone.tail)[2]]+armature.worldPosition, [-list(bones[x1].bone.head)[0]+armature.worldPosition, list(bones[x1].bone.head)[2]+armature.worldPosition
-            
-            #angle_diff = fream1_angle - intial_angle
-            
-            #bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-            
+            angle_diff = cf.getAngle_2pts(frames[0][x2][:-1], frames[0][x3][:-1]) - cf.getAngle_2pts(initial_frame[x2][:-1], initial_frame[x3][:-1])
+            bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1].bone.select = False
-        
-        #print(cf.getAngle_2pts(list(bones['ShoulderLeft'].bone.tail)[::2], list(bones['ShoulderLeft'].bone.head)[::2]))
         
 
         # XZ plane Animation 
@@ -281,17 +267,17 @@ class addReggedModel(bpy.types.Operator):
         return rigInfo
     
     def import_model(context):
+        bpy.ops.object.select_all(action='DESELECT') # Deselect all objects
         bpy.ops.import_scene.obj(filepath = (cf.MAIN_DIR) + "\\1_human.obj")
+        bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
         
     def add_armature(context,self):
         model = bpy.context.active_object #get the armature object
-        #print(model.name)
-        #print(model.location)
         bpy.ops.object.add(type = "ARMATURE")
         
         obArm = bpy.context.active_object #get the armature object
-        #obArm.location = model.location
-        #obArm.rotation_euler = model.rotation_euler
+        obArm.location = model.location
+        obArm.rotation_euler = model.rotation_euler
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         ebs = obArm.data.edit_bones
 
@@ -472,15 +458,9 @@ class addReggedModel(bpy.types.Operator):
         
     def recenter(context):
         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-        
         obj = bpy.context.scene.objects["Armature"]
-        obj.rotation_euler.x -= np.deg2rad(91.5)
-        obj.rotation_euler.y += np.deg2rad(3)
-        obj.rotation_euler.z += np.deg2rad(233)
-        obj.location.z += 2
-        obj.scale.x += 1
-        obj.scale.y += 1
-        obj.scale.z += 1
+        
+        obj.rotation_euler.z += np.deg2rad(180)
 
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
  
