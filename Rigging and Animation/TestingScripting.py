@@ -34,8 +34,11 @@ class cf(): # common functions
         list_json_raw = listdir(cf.MAIN_DIR + Dir_pose)
         list_json = [('frame' + str(i+1) + '_keypoints.json') for i in range(len(list_json_raw)-1) if (str(list_json_raw[i]))[-4:] == "json"]
         frames = []
-        for file_name in list_json:
-            frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir_pose + file_name))
+        for i,file_name in enumerate(list_json):
+            if cf.people_count_in_file(cf.MAIN_DIR + Dir_pose + file_name) == 1:
+                frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir_pose + file_name))
+            else:
+                frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir_pose + list_json[i-1]))
 
         f = open(cf.MAIN_DIR + Dir_pose + '\\my_fps.txt')
         fps = f.read()
@@ -45,6 +48,14 @@ class cf(): # common functions
         cf.fix_unseen_joints(frames)
 
         return frames, fps
+    
+    @staticmethod
+    def people_count_in_file(Dir):
+        f = open(Dir)
+        data = json.load(f)
+        arr = data['people']
+        return len(arr)
+    
 
     @staticmethod
     def fix_unseen_joints(frames):
@@ -110,15 +121,7 @@ class test(bpy.types.Operator):
         frames, fps = cf.load_frames_pose()
         fps = round(fps)
         
-        ff = 7
-        
-        print('REye', frames[ff]['REye'])
-        print('LEye', frames[ff]['LEye'])
-        print('Nose', frames[ff]['Nose'])
-        frame = frames[ff]
-        
-        angle_diff = cf.getAngle_2pts(frame['REar'][:-1], frame['LEar'][:-1])
-        print('angle_diff:', np.rad2deg(angle_diff))
+        cf.people_count_in_file('frame7_keypoints.json')
         
         
         return {"FINISHED"}
@@ -199,6 +202,7 @@ class animate(bpy.types.Operator):
         raised_l = False
         
         for frame_num in range(len(frames)-1):
+            
             bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
             
             ####### Left Arm Animation ########################################
@@ -286,6 +290,7 @@ class animate(bpy.types.Operator):
         ####### XZ plane Thighs Animation #################################
         ###################################################################
         for frame_num in range(len(frames)-1):
+
             for x1,x2,x3 in bones_map_Y[2:]:
                 bones[x1].bone.select = True  
                 bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
@@ -310,6 +315,7 @@ class animate(bpy.types.Operator):
         ####### XZ plane Elbow Animation  #################################
         ###################################################################
         for frame_num in range(len(frames)-1):
+            
             for i,(x1,x2,x3) in enumerate(bones_map_elbow):
                 bones[x1].bone.select = True  
                 bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
@@ -330,6 +336,7 @@ class animate(bpy.types.Operator):
         xAxis_rotation = list(np.zeros(len(frames)))
 
         for frame_num, frame in enumerate(frames):
+            
             bones['SpinalCordB4'].bone.select = True  
             bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
 
@@ -353,6 +360,7 @@ class animate(bpy.types.Operator):
 
         # X-axis rotation
         for frame_num in range(len(frames)):
+
             bones['SpinalCordB4'].bone.select = True  
             bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
 
@@ -379,13 +387,15 @@ class animate(bpy.types.Operator):
                         ['LegRight', 'RKnee', 'RAnkle', -1, 0, True]]
         
         for frame_num in range(len(frames)):
+
             for i in range(len(bones_map_legs)):
                 bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_legs[i][1]][:-1], frames[frame_num][bones_map_legs[i][2]][:-1])
-                if bone_length > bones_map_legs[i][4] and frames[frame_num][bones_map_legs[i][1]][-1] != 0 and frames[frame_num][bones_map_legs[i][2]][-1] != 0:
-                    bones_map_legs[i][4] = bone_length
+                #if bone_length > bones_map_legs[i][4] and frames[frame_num][bones_map_legs[i][1]][-1] != 0 and frames[frame_num][bones_map_legs[i][2]][-1] != 0:
+                bones_map_legs[i][4] = bone_length / len(frames)
 
         perant_angle = 0
         for frame_num in range(1,len(frames)):
+
             for i in range(len(bones_map_legs)):
                 bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_legs[i][1]][:-1], frames[frame_num][bones_map_legs[i][2]][:-1])
                 Angle = cf.getDepthAngle(bones_map_legs[i][4], bone_length)
@@ -417,13 +427,15 @@ class animate(bpy.types.Operator):
                         ['HandRight', 'RElbow', 'RWrist', 1, 0, True]]
         
         for frame_num in range(len(frames)):
+
             for i in range(len(bones_map_arms)):
                 bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_arms[i][1]][:-1], frames[frame_num][bones_map_arms[i][2]][:-1])
-                if bone_length > bones_map_arms[i][4] and frames[frame_num][bones_map_arms[i][1]][-1] != 0 and frames[frame_num][bones_map_arms[i][2]][-1] != 0:
-                    bones_map_arms[i][4] = bone_length
+                #if bone_length > bones_map_arms[i][4] and frames[frame_num][bones_map_arms[i][1]][-1] != 0 and frames[frame_num][bones_map_arms[i][2]][-1] != 0:
+                bones_map_arms[i][4] = bone_length / len(frames)
 
         perant_angle = 0
         for frame_num in range(1,len(frames)):
+
             for i in range(len(bones_map_arms)):
                 bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_arms[i][1]][:-1], frames[frame_num][bones_map_arms[i][2]][:-1])
                 Angle = cf.getDepthAngle(bones_map_arms[i][4], bone_length)
