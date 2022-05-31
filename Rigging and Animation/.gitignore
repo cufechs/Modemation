@@ -3,6 +3,7 @@ pose_ex/
 input_video/
 frames/
 openpose/
+Trails/
 Playground.ipynb
 
 *.fbx
