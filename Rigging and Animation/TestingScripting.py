@@ -34,11 +34,11 @@ class cf(): # common functions
         list_json_raw = listdir(cf.MAIN_DIR + Dir_pose)
         list_json = [('frame' + str(i+1) + '_keypoints.json') for i in range(len(list_json_raw)-1) if (str(list_json_raw[i]))[-4:] == "json"]
         frames = []
-        for i,file_name in enumerate(list_json):
+        for file_name in list_json:
             if cf.people_count_in_file(cf.MAIN_DIR + Dir_pose + file_name) == 1:
                 frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir_pose + file_name))
             else:
-                frames.append(cf.parse_pose_25(cf.MAIN_DIR + Dir_pose + list_json[i-1]))
+                frames.append(frames[-1])
 
         f = open(cf.MAIN_DIR + Dir_pose + '\\my_fps.txt')
         fps = f.read()
