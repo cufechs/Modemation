@@ -103,17 +103,11 @@ class test(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
         bones = scn.objects['Armature'].pose.bones
         
-        #bones['ThighLeft'].head
+        angle_left = cf.getAngle_2pts(list(bones['ShoulderLeft'].head)[:-1], list(bones['ShoulderLeft'].tail)[:-1])
+        angle_right = cf.getAngle_2pts(list(bones['ShoulderRight'].head)[:-1], list(bones['ShoulderRight'].tail)[:-1])
         
-        
-        angle_left = cf.getAngle_2pts(list(bones['ThighLeft'].head)[:-1], list(bones['ThighLeft'].tail)[:-1])
-        angle_right = cf.getAngle_2pts(list(bones['ThighRight'].head)[:-1], list(bones['ThighRight'].tail)[:-1])
-        
-        print(np.rad2deg(angle_left))
-        print(np.rad2deg(angle_right))
-        
-        print(np.rad2deg(angle_left - angle_right))
-
+        print('left:', np.rad2deg(angle_left))
+        print('right:', np.rad2deg(angle_right))
         
         return {"FINISHED"}
 
@@ -126,11 +120,11 @@ class animate(bpy.types.Operator):
         
         initial_frame = cf.parse_pose_25(cf.MAIN_DIR + '\\initialModelPose.json')
         bones_map_Y = [['ShoulderLeft', 'LShoulder', 'LElbow'],
-                     ['ShoulderRight', 'RShoulder', 'RElbow'],
-                     ['ThighLeft', 'LHip', 'LKnee'],
-                     ['ThighRight', 'RHip', 'RKnee']]
+                         ['ShoulderRight', 'RShoulder', 'RElbow'],
+                         ['ThighLeft', 'LHip', 'LKnee'],
+                         ['ThighRight', 'RHip', 'RKnee']]
         bones_map_elbow = [['HandLeft', 'LElbow', 'LWrist'],
-                     ['HandRight', 'RElbow', 'RWrist']]
+                            ['HandRight', 'RElbow', 'RWrist']]
 
         # loading frames and downsampled fps
         frames, fps = cf.load_frames_pose()
@@ -145,8 +139,8 @@ class animate(bpy.types.Operator):
 
 
         for frame_num in range(len(frames)):
-            # Saving legs and neck rotation in frames 
-            for x in ['LegLeft', 'LegRight', 'SpinalCordB4']:
+            # Saving some bones rotation in frames 
+            for x in ['LegLeft', 'LegRight', 'SpinalCordB4', 'ShoulderLeftBone', 'ShoulderRightBone']:
                 bones[x].bone.select = True
                 bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
@@ -182,15 +176,40 @@ class animate(bpy.types.Operator):
         ###################################################################
         ####### XZ plane Arm Animation ####################################
         ###################################################################
-        for frame_num in range(len(frames)-1):
-            for x1,x2,x3 in bones_map_Y[:2]:
+        bones_map_shoulder = [['ShoulderLeft', 'LShoulder', 'LElbow', 'ShoulderLeftBone', -1],
+                            ['ShoulderRight', 'RShoulder', 'RElbow', 'ShoulderRightBone', 1]]
+        arm_angle_threshold = -87
+        for x1,x2,x3,x4,x5 in bones_map_shoulder:
+            raised = False
+            for frame_num in range(len(frames)-1):
                 bones[x1].bone.select = True  
                 bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
                 
                 angle_diff = cf.getAngle_2pts(frames[frame_num+1][x2][:-1], frames[frame_num+1][x3][:-1]) - cf.getAngle_2pts(frames[frame_num][x2][:-1], frames[frame_num][x3][:-1])
-                bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                
+                angle_model = cf.getAngle_2pts(list(bones['ShoulderLeft'].head)[:-1], list(bones['ShoulderLeft'].tail)[:-1])
+                if np.rad2deg(angle_model + angle_diff) < arm_angle_threshold and not raised:
+                    raised = True
+                    
+                    bones[x1].bone.select = True 
+                    bpy.ops.transform.rotate(value=0.3, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                    
+                    bones[x1].bone.select = False
+                    bones[x4].bone.select = True 
+                    bpy.ops.transform.rotate(value=0.4*x5, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
 
+                    bones[x4].bone.select = False
+                    bones[x1].bone.select = True 
+                
+                elif np.rad2deg(angle_model + angle_diff) > arm_angle_threshold and raised:
+                    bpy.ops.transform.rotate(value=-0.3, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                    raised = False
+                
+                bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                
+                bones[x4].bone.select = True 
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                bones[x4].bone.select = False
                 bones[x1].bone.select = False
         ###################################################################
         
