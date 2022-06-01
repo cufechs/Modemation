@@ -378,7 +378,7 @@ class animate(bpy.types.Operator):
         ###################################################################
         ####### legs (to front& back) Animation ###########################
         ###################################################################
-        thighAngleThreshold = math.radians(35)
+        thighAngleThreshold = math.radians(30)
         
         # bones_map_legs = [bone in armature, point 1 in pose, point 2 in pose, rotation direction, max length, is child flag]
         bones_map_legs = [['ThighLeft', 'LHip', 'LKnee', 1, 0, False], 
@@ -386,12 +386,14 @@ class animate(bpy.types.Operator):
                         ['ThighRight', 'RHip', 'RKnee', 1, 0, False],
                         ['LegRight', 'RKnee', 'RAnkle', -1, 0, True]]
         
-        for frame_num in range(len(frames)):
-
-            for i in range(len(bones_map_legs)):
+        for i in range(len(bones_map_legs)):
+            bone_lengths = []
+            for frame_num in range(len(frames)):
                 bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_legs[i][1]][:-1], frames[frame_num][bones_map_legs[i][2]][:-1])
-                #if bone_length > bones_map_legs[i][4] and frames[frame_num][bones_map_legs[i][1]][-1] != 0 and frames[frame_num][bones_map_legs[i][2]][-1] != 0:
-                bones_map_legs[i][4] = bone_length / len(frames)
+                bone_lengths.append(bone_length)
+                
+            bone_lengths.sort(reverse=True)
+            bones_map_legs[i][4] = sum(bone_lengths[: 3*len(frames)//4]) / (3*len(frames)//4)
 
         perant_angle = 0
         for frame_num in range(1,len(frames)):
@@ -418,20 +420,22 @@ class animate(bpy.types.Operator):
         ###################################################################
         ####### arms (to front& back) Animation ###########################
         ###################################################################
-        shoulderAngleThreshold = math.radians(20)
+        shoulderAngleThreshold = math.radians(30)
         
         # bones_map_X = [bone in armature, point 1 in pose, point 2 in pose, rotation direction, max length, is child flag]
         bones_map_arms = [['ShoulderLeft', 'LShoulder', 'LElbow', 1, 0, False], 
-                        ['HandLeft', 'LElbow', 'LWrist', 1, 0, True],
-                        ['ShoulderRight', 'RShoulder', 'RElbow', 1, 0, False],
-                        ['HandRight', 'RElbow', 'RWrist', 1, 0, True]]
+                        #['HandLeft', 'LElbow', 'LWrist', 1, 0, True],
+                        ['ShoulderRight', 'RShoulder', 'RElbow', 1, 0, False]]
+                        #['HandRight', 'RElbow', 'RWrist', 1, 0, True]]
         
-        for frame_num in range(len(frames)):
-
-            for i in range(len(bones_map_arms)):
+        for i in range(len(bones_map_arms)):
+            bone_lengths = []
+            for frame_num in range(len(frames)):
                 bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_arms[i][1]][:-1], frames[frame_num][bones_map_arms[i][2]][:-1])
-                #if bone_length > bones_map_arms[i][4] and frames[frame_num][bones_map_arms[i][1]][-1] != 0 and frames[frame_num][bones_map_arms[i][2]][-1] != 0:
-                bones_map_arms[i][4] = bone_length / len(frames)
+                bone_lengths.append(bone_length)
+                
+            bone_lengths.sort(reverse=True)
+            bones_map_arms[i][4] = sum(bone_lengths[: len(frames)//2]) / (len(frames)//2)
 
         perant_angle = 0
         for frame_num in range(1,len(frames)):
@@ -443,11 +447,12 @@ class animate(bpy.types.Operator):
                 #print(bones_map_arms[i][0], ': ', Angle)
                 
                 Angle = 0 if Angle < 0 else Angle
-            
+                
+                # and cf.getAngle_2pts(list(bones[bones_map_arms[i][0]].head)[:-1], list(bones[bones_map_arms[i][0]].tail)[:-1], degree = True) > 
                 if Angle > shoulderAngleThreshold: 
                     bones[bones_map_arms[i][0]].bone.select = True
-                    bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
-                    bpy.ops.transform.rotate(value=Angle * bones_map_arms[i][3], orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                    bpy.context.scene.frame_set((frame_num)*(24//fps) + 1) 
+                    bpy.ops.transform.rotate(value = Angle * bones_map_arms[i][3], orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                     bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                     bones[bones_map_arms[i][0]].bone.select = False
                     
