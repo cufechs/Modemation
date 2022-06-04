@@ -211,29 +211,36 @@ class animate(bpy.types.Operator):
             angle_diff = cf.getAngle_2pts(frames[frame_num+1][x2_l][:-1], frames[frame_num+1][x3_l][:-1]) - cf.getAngle_2pts(frames[frame_num][x2_l][:-1], frames[frame_num][x3_l][:-1])            
             angle_model = cf.getAngle_2pts(list(bones[x1_l].head)[:-1], list(bones[x1_l].tail)[:-1])
 
-            if np.rad2deg(angle_model + angle_diff) < arm_angle_threshold_l and not raised_l:                    
+            if np.rad2deg(angle_model + angle_diff) < arm_angle_threshold_l and not raised_l: 
+                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)                   
                 bones[x1_l].bone.select = True 
                 bpy.ops.transform.rotate(value=0.3, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 
                 bones[x1_l].bone.select = False
                 bones[x4_l].bone.select = True 
                 bpy.ops.transform.rotate(value=0.4*x5_l, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                
                 bones[x4_l].bone.select = False
                 bones[x1_l].bone.select = True 
                 raised_l = True
                 
             elif np.rad2deg(angle_model + angle_diff) < arm_angle_threshold_l and raised_l:
+                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 bones[x1_l].bone.select = False
                 bones[x4_l].bone.select = True 
                 bpy.ops.transform.rotate(value=0.4*x5_l, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                
                 bones[x4_l].bone.select = False
                 bones[x1_l].bone.select = True 
             
             elif np.rad2deg(angle_model + angle_diff) > arm_angle_threshold_l and raised_l:
                 bpy.ops.transform.rotate(value=-0.3, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                 raised_l = False
+            
+            bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
             
             bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
             
@@ -250,33 +257,35 @@ class animate(bpy.types.Operator):
             angle_model = cf.getAngle_2pts(list(bones[x1_r].head)[:-1], list(bones[x1_r].tail)[:-1])
             
             if np.rad2deg(angle_model + angle_diff) > arm_angle_threshold_r and np.rad2deg(angle_model + angle_diff) < 0 and not raised_r:
+                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 bones[x1_r].bone.select = True 
                 bpy.ops.transform.rotate(value=0.3, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 
                 bones[x1_r].bone.select = False
                 bones[x4_r].bone.select = True 
                 bpy.ops.transform.rotate(value=0.4*x5_r, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                
                 bones[x4_r].bone.select = False
                 bones[x1_r].bone.select = True 
                 raised_r = True
                 
             elif np.rad2deg(angle_model + angle_diff) > arm_angle_threshold_r and np.rad2deg(angle_model + angle_diff) < 0 and raised_r:
+                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 bones[x1_r].bone.select = False
                 bones[x4_r].bone.select = True 
                 bpy.ops.transform.rotate(value=0.4*x5_r, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-
+                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                
                 bones[x4_r].bone.select = False
                 bones[x1_r].bone.select = True 
             
             elif (np.rad2deg(angle_model + angle_diff) < arm_angle_threshold_r or np.rad2deg(angle_model + angle_diff) > 0) and raised_r:
                 bpy.ops.transform.rotate(value=-0.3, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                 raised_r = False
-            
-            
-            if frame_num == 7:
-                print (np.rad2deg(angle_diff))
-            
+
+            bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
             bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
             
             bones[x4_r].bone.select = True 
@@ -313,20 +322,41 @@ class animate(bpy.types.Operator):
         
         ###################################################################
         ####### XZ plane Elbow Animation  #################################
-        ###################################################################
-        for frame_num in range(len(frames)-1):
-            
-            for i,(x1,x2,x3) in enumerate(bones_map_elbow):
-                bones[x1].bone.select = True  
-                bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
-                
-                angle_diff = cf.getAngle_2pts(frames[frame_num+1][x2][:-1], frames[frame_num+1][x3][:-1]) - cf.getAngle_2pts(frames[frame_num][x2][:-1], frames[frame_num][x3][:-1])
-                angle_diff_shoulder = cf.getAngle_2pts(frames[frame_num+1][bones_map_Y[i][1]][:-1], frames[frame_num+1][bones_map_Y[i][2]][:-1]) - cf.getAngle_2pts(frames[frame_num][bones_map_Y[i][1]][:-1], frames[frame_num][bones_map_Y[i][2]][:-1])
-                angle_diff -= angle_diff_shoulder
-                bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+        ###################################################################    
+        x1_l,x2_l,x3_l,x4_l = ['HandLeft', 'LElbow', 'LWrist', ['ShoulderLeft', 'LShoulder', 'LElbow']]
+        x1_r,x2_r,x3_r,x4_r = ['HandRight', 'RElbow', 'RWrist', ['ShoulderRight', 'RShoulder', 'RElbow']]
+        x1_r_s,x2_r_s,x3_r_s,x4_r_s,x5_r_s = bones_map_shoulder[1]
+        arm_angle_threshold_l = -87
+        arm_angle_threshold_r = -93
 
-                bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-                bones[x1].bone.select = False
+        for frame_num in range(len(frames)-1):
+            bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
+            
+            bones[x1_l].bone.select = True  
+            
+            left_shoulder_angle = cf.getAngle_2pts(list(bones[x4_l[0]].head)[:-1], list(bones[x4_l[0]].tail)[:-1])
+            left_forearm_angle = cf.getAngle_2pts(list(bones[x1_l].head)[:-1], list(bones[x1_l].tail)[:-1])
+            
+            angle_diff = cf.getAngle_2pts(frames[frame_num+1][x2_l][:-1], frames[frame_num+1][x3_l][:-1]) - cf.getAngle_2pts(frames[frame_num][x2_l][:-1], frames[frame_num][x3_l][:-1])
+            angle_diff_shoulder = cf.getAngle_2pts(frames[frame_num+1][x4_l[1]][:-1], frames[frame_num+1][x4_l[2]][:-1]) - cf.getAngle_2pts(frames[frame_num][x4_l[1]][:-1], frames[frame_num][x4_l[2]][:-1])
+            angle_diff -= angle_diff_shoulder
+            bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                
+            bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+            bones[x1_l].bone.select = False
+            
+ 
+            bones[x1_r].bone.select = True 
+            
+            right_shoulder_angle = cf.getAngle_2pts(list(bones[x4_r[0]].head)[:-1], list(bones[x4_r[0]].tail)[:-1]) 
+            
+            angle_diff = cf.getAngle_2pts(frames[frame_num+1][x2_r][:-1], frames[frame_num+1][x3_r][:-1]) - cf.getAngle_2pts(frames[frame_num][x2_r][:-1], frames[frame_num][x3_r][:-1])
+            angle_diff_shoulder = cf.getAngle_2pts(frames[frame_num+1][x4_r[1]][:-1], frames[frame_num+1][x4_r[2]][:-1]) - cf.getAngle_2pts(frames[frame_num][x4_r[1]][:-1], frames[frame_num][x4_r[2]][:-1])
+            angle_diff -= angle_diff_shoulder
+            bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+
+            bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+            bones[x1_r].bone.select = False
         ###################################################################
 
         
@@ -423,7 +453,7 @@ class animate(bpy.types.Operator):
         shoulderAngleThreshold = math.radians(30)
         
         # bones_map_X = [bone in armature, point 1 in pose, point 2 in pose, rotation direction, max length, is child flag]
-        bones_map_arms = [['ShoulderLeft', 'LShoulder', 'LElbow', 1, 0, False], 
+        '''bones_map_arms = [['ShoulderLeft', 'LShoulder', 'LElbow', 1, 0, False], 
                         #['HandLeft', 'LElbow', 'LWrist', 1, 0, True],
                         ['ShoulderRight', 'RShoulder', 'RElbow', 1, 0, False]]
                         #['HandRight', 'RElbow', 'RWrist', 1, 0, True]]
@@ -457,7 +487,7 @@ class animate(bpy.types.Operator):
                     bones[bones_map_arms[i][0]].bone.select = False
                     
                 perant_angle = Angle
-        ###################################################################     
+        ###################################################################'''
 
         return {"FINISHED"}
     
