@@ -1,6 +1,6 @@
 #!/bin/bash
 
-py get_frames.py -mfps 3 -rf 2
+py get_frames.py -mfps 5 -rf 4
 
 move frames openpose
 

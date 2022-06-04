@@ -19,13 +19,15 @@ if __name__ == '__main__' :
     # create 'frames' dir if not there, and if there flush it
     try: 
         shutil.rmtree(os.path.join(MAIN_DIR, 'frames'))
+    except:
+        pass
     finally:
         os.mkdir('frames') 
         os.mkdir('frames/pose') 
 
     try: 
         shutil.rmtree(os.path.join(MAIN_DIR, 'openpose/frames'))
-    finally:
+    except:
         pass
 
 
@@ -47,12 +49,13 @@ if __name__ == '__main__' :
     my_fps = frames_taken / (duration - (frames_dropped*(1/fps)))
     
     success,image = vidcap.read()
+    hight, width = image.shape[:2]
     frames_count = 0
     gap = 0
     while success:    
         if gap == 0:
             frames_count += 1
-            resized_image = cv2.resize(image, (1280//resize_factor, 720//resize_factor), interpolation = cv2.INTER_NEAREST)
+            resized_image = cv2.resize(image, (width//resize_factor, hight//resize_factor), interpolation = cv2.INTER_NEAREST)
             cv2.imwrite("frames/frame%d.jpg" % frames_count, resized_image)     # save frame as JPG file      
             success, image = vidcap.read()
             gap += frames_gap-1
