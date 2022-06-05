@@ -242,7 +242,6 @@ class animate(bpy.types.Operator):
             left_forearm_angle = cf.getAngle_2pts(list(bones['HandLeft'].head)[:-1], list(bones['HandLeft'].tail)[:-1])
 
             if np.rad2deg(left_forearm_angle + angle_diff) < arm_angle_threshold_l and not raised_l: 
-                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 
                 bones[x1_l].bone.select = True 
                 bpy.ops.transform.rotate(value=0.4, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
@@ -256,21 +255,18 @@ class animate(bpy.types.Operator):
                 raised_l = True
                 
             elif np.rad2deg(left_forearm_angle + angle_diff) < arm_angle_threshold_l and raised_l:
-                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 bones[x4_l].bone.select = True 
                 bpy.ops.transform.rotate(value=0.4*x5_l, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 bones[x4_l].bone.select = False
             
             elif np.rad2deg(left_forearm_angle + angle_diff) > arm_angle_threshold_l and raised_l:
-                bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
                 bones[x1_l].bone.select = True 
                 bpy.ops.transform.rotate(value=-0.4, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 bones[x1_l].bone.select = False
                 raised_l = False 
             
-            bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
             bones[x1_l].bone.select = True  
             bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
@@ -307,7 +303,6 @@ class animate(bpy.types.Operator):
             print('frame_num:', frame_num, 'angle:', np.rad2deg(right_forearm_angle + angle_diff))
             
             if np.rad2deg(right_forearm_angle + angle_diff) > arm_angle_threshold_r and np.rad2deg(right_forearm_angle + angle_diff) < 0 and not raised_r:
-                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 bones[x1_r].bone.select = True 
                 bpy.ops.transform.rotate(value=0.4, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
@@ -321,21 +316,18 @@ class animate(bpy.types.Operator):
                 raised_r = True
                 
             elif np.rad2deg(right_forearm_angle + angle_diff) > arm_angle_threshold_r and np.rad2deg(right_forearm_angle + angle_diff) < 0 and raised_r:
-                bpy.context.scene.frame_set((frame_num)*(24//fps) + 1)
                 bones[x4_r].bone.select = True 
                 bpy.ops.transform.rotate(value=0.4*x5_r, orient_axis='Z', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, False, True), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 bones[x4_r].bone.select = False
             
             elif (np.rad2deg(right_forearm_angle + angle_diff) < arm_angle_threshold_r or np.rad2deg(right_forearm_angle + angle_diff) > 0) and raised_r:
-                bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
                 bones[x1_r].bone.select = True 
                 bpy.ops.transform.rotate(value=-0.4, orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                 bpy.ops.anim.keyframe_insert_menu(type='Rotation')
                 bones[x1_r].bone.select = False
                 raised_r = False
                 
-            bpy.context.scene.frame_set((frame_num+1)*(24//fps) + 1)
             bones[x1_r].bone.select = True
             bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
