@@ -189,7 +189,7 @@ class animate(bpy.types.Operator):
             
         for i,(x1,x2,x3) in enumerate(bones_map_elbow):
             bones[x1].bone.select = True  
-            bpy.context.scene.frame_set((frame_num+1)*(24//fps))
+            bpy.context.scene.frame_set(0)
             
             angle_diff = cf.getAngle_2pts(frames[0][x2][:-1], frames[0][x3][:-1]) - cf.getAngle_2pts(initial_frame[x2][:-1], initial_frame[x3][:-1])
             angle_diff_shoulder = cf.getAngle_2pts(frames[0][bones_map_Y[i][1]][:-1], frames[0][bones_map_Y[i][2]][:-1]) - cf.getAngle_2pts(initial_frame[bones_map_Y[i][1]][:-1], initial_frame[bones_map_Y[i][2]][:-1])
