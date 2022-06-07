@@ -10,11 +10,17 @@ from mathutils import Matrix
 
 class cf(): # common functions
     
+    MODEL_DIR = "\\model\\1_human.obj"
+    MODEL_REG_INFO = "\\model\\landmarks_v1.json"
+    INITIAL_MODEL_POSE = "\\initialModelPose.json"
+    
+    
     MAIN_DIR = str(pathlib.Path(__file__).parent.parent.resolve())
     JOINTS_MAP = ['Nose', 'Neck', 'RShoulder', 'RElbow' ,'RWrist', 'LShoulder',
                'LElbow', 'LWrist', 'MidHip', 'RHip', 'RKnee', 'RAnkle', 'LHip',
                'LKnee', 'LAnkle', 'REye', 'LEye', 'REar', 'LEar', 'LBigToe',
                'LSmallToe', 'LHeel', 'RBigToe', 'RSmallToe', 'RHeel']
+               
                
     CAM_DATA = [90, -0.496, -180, -0.008896, 4.5678, -0.44718]
 
@@ -152,7 +158,7 @@ class animate(bpy.types.Operator):
 
     def execute(self, context):
         
-        initial_frame = cf.parse_pose_25(cf.MAIN_DIR + '\\initialModelPose.json')
+        initial_frame = cf.parse_pose_25(cf.MAIN_DIR + cf.INITIAL_MODEL_POSE)
         bones_map_Y = [['ShoulderLeft', 'LShoulder', 'LElbow'],
                          ['ShoulderRight', 'RShoulder', 'RElbow'],
                          ['ThighLeft', 'LHip', 'LKnee'],
@@ -567,7 +573,7 @@ class addReggedModel(bpy.types.Operator):
     
     def import_model(context):
         bpy.ops.object.select_all(action='DESELECT') # Deselect all objects
-        bpy.ops.import_scene.obj(filepath = (cf.MAIN_DIR) + "\\1_human.obj")
+        bpy.ops.import_scene.obj(filepath = cf.MAIN_DIR + cf.MODEL_DIR)
         bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
         
     def add_armature(context,self):
@@ -580,7 +586,7 @@ class addReggedModel(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         ebs = obArm.data.edit_bones
 
-        rigInfo = self.readRigInfo(cf.MAIN_DIR + "\\landmarks_v1.json")
+        rigInfo = self.readRigInfo(cf.MAIN_DIR + cf.MODEL_REG_INFO)
     
         keypoints = {}
         

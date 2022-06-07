@@ -32,8 +32,8 @@ if __name__ == '__main__' :
 
 
     # get video file name
-    list_mp4s = [f for f in sorted(os.listdir('input_video/')) if ((str(f))[-3:] == "mp4" or (str(f))[-3:] == "mp4")]
-    vidcap = cv2.VideoCapture('input_video/' + list_mp4s[0])
+    list_mp4s = [f for f in sorted(os.listdir('inputs/video/')) if ((str(f))[-3:] == "mp4" or (str(f))[-3:] == "mp4")]
+    vidcap = cv2.VideoCapture('inputs/video/' + list_mp4s[0])
 
     min_fps = args['mfps']
     resize_factor = args['rf']
