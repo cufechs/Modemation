@@ -214,7 +214,9 @@ class animate(bpy.types.Operator):
             
             angle_diff_elbow_l = cf.getAngle_2pts(frames[frame_num+1][x2_l_e][:-1], frames[frame_num+1][x3_l_e][:-1]) - cf.getAngle_2pts(frames[frame_num][x2_l_e][:-1], frames[frame_num][x3_l_e][:-1])
             angle_diff_elbow_l -= angle_diff_shoulder_l
-            bpy.ops.transform.rotate(value=angle_diff_elbow_l, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+            
+            if abs(angle_diff_elbow_l) > np.deg2rad(5):
+                bpy.ops.transform.rotate(value=angle_diff_elbow_l, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
                 
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1_l_e].bone.select = False
@@ -251,7 +253,8 @@ class animate(bpy.types.Operator):
                 raised_l = False
             
             bones[x1_l].bone.select = True  
-            bpy.ops.transform.rotate(value=angle_diff_shoulder_l, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+            if abs(angle_diff_shoulder_l) > np.deg2rad(5):
+                bpy.ops.transform.rotate(value=angle_diff_shoulder_l, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1_l].bone.select = False
             
@@ -268,7 +271,8 @@ class animate(bpy.types.Operator):
 
             angle_diff_elbow_r = cf.getAngle_2pts(frames[frame_num+1][x2_r_e][:-1], frames[frame_num+1][x3_r_e][:-1]) - cf.getAngle_2pts(frames[frame_num][x2_r_e][:-1], frames[frame_num][x3_r_e][:-1])
             angle_diff_elbow_r -= angle_diff_shoulder_r
-            bpy.ops.transform.rotate(value=angle_diff_elbow_r, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+            if abs(angle_diff_elbow_r) > np.deg2rad(5):
+                bpy.ops.transform.rotate(value=angle_diff_elbow_r, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1_r_e].bone.select = False
             ##################################################
@@ -303,7 +307,8 @@ class animate(bpy.types.Operator):
                 raised_r = False
                 
             bones[x1_r].bone.select = True
-            bpy.ops.transform.rotate(value=angle_diff_shoulder_r, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+            if abs(angle_diff_shoulder_r) > np.deg2rad(5):
+                bpy.ops.transform.rotate(value=angle_diff_shoulder_r, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1_r].bone.select = False
         ###################################################################
