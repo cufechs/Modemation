@@ -121,23 +121,9 @@ class test(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
         bones = scn.objects['Armature'].pose.bones
         
-        x1_l,x2_l,x3_l,x4_l = ['HandLeft', 'LElbow', 'LWrist', ['ShoulderLeft', 'LShoulder', 'LElbow']]
-        x1_r,x2_r,x3_r,x4_r = ['HandRight', 'RElbow', 'RWrist', ['ShoulderRight', 'RShoulder', 'RElbow']]
-        arm_angle_threshold_l = -87
-        arm_angle_threshold_r = -93
-
-        lift_shoulder_angle = cf.getAngle_2pts(list(bones[x4_l[0]].head)[:-1], list(bones[x4_l[0]].tail)[:-1])
-        lift_forearm_angle = cf.getAngle_2pts(list(bones[x1_l].head)[:-1], list(bones[x1_l].tail)[:-1])
-        
-        right_shoulder_angle = cf.getAngle_2pts(list(bones[x4_r[0]].head)[:-1], list(bones[x4_r[0]].tail)[:-1])
-        right_forearm_angle = cf.getAngle_2pts(list(bones[x1_r].head)[:-1], list(bones[x1_r].tail)[:-1])
-        
-        print('lift_shoulder_angle:', np.rad2deg(lift_shoulder_angle))
-        print('lift_forearm_angle:', np.rad2deg(lift_forearm_angle))
-        
-        print('right_shoulder_angle:', np.rad2deg(right_shoulder_angle))
-        print('right_forearm_angle:', np.rad2deg(right_forearm_angle))
-        
+        angle_left = cf.getAngle_2pts(list(bones['ThighLeft'].head)[:-1], list(bones['ThighLeft'].tail)[:-1])
+                
+        print('angle_left:', np.rad2deg(angle_left))
         
         
         return {"FINISHED"}
@@ -170,7 +156,7 @@ class animate(bpy.types.Operator):
         ###################################################################
         ####### Saving some bones rotation in frames  #####################
         ###################################################################
-        for x in ['LegLeft', 'LegRight', 'SpinalCordB4', 'ShoulderLeftBone', 'ShoulderRightBone']:
+        for x in ['LegLeft', 'LegRight', 'SpinalCordB4', 'ShoulderLeftBone', 'ShoulderRightBone', 'ThighLeft', 'ThighRight']:
             for frame_num in range(len(frames)):
                 bones[x].bone.select = True
                 bpy.context.scene.frame_set(frame_num*(24//fps))
@@ -321,19 +307,104 @@ class animate(bpy.types.Operator):
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
             bones[x1_r].bone.select = False
         ###################################################################
+
+        
+        
+        ###################################################################
+        ####### legs (to front& back) Animation ###########################
+        ###################################################################
+        thighAngleThreshold = math.radians(20)
+        include_knees_depth = False
+        
+        # bones_map_legs = [bone in armature, point 1 in pose, point 2 in pose, rotation direction, max length, is child flag]
+        bones_map_legs = [['ThighLeft', 'LHip', 'LKnee', 1, 0, False], 
+                        ['LegLeft', 'LKnee', 'LAnkle', -1, 0, True],
+                        ['ThighRight', 'RHip', 'RKnee', 1, 0, False],
+                        ['LegRight', 'RKnee', 'RAnkle', -1, 0, True]]
+        leg_moved_forward = {bones_map_legs[0][0]: [False for _ in range(len(frames))],\
+                             bones_map_legs[2][0]: [False for _ in range(len(frames))]}
+        
+        # Calculating leg bones lengths
+        for i in range(len(bones_map_legs)):
+            if not include_knees_depth and bones_map_legs[i][-1]:
+                continue
+                
+            bone_lengths = []
+            for frame_num in range(len(frames)):
+                bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_legs[i][1]][:-1], frames[frame_num][bones_map_legs[i][2]][:-1])
+                bone_lengths.append(bone_length)
+            
+            bone_lengths.sort(reverse=True)
+            bones_map_legs[i][4] = sum(bone_lengths[: len(frames)//2]) / (len(frames)//2)
+
+        
+        
+        for frame_num in range(1,len(frames)):
+            perant_angle = 0
+            
+            # Checking if both legs will be raised
+            bone_length_left_thigh = cf.getDistance_2pts(frames[frame_num]['LHip'][:-1], frames[frame_num]['LKnee'][:-1])
+            angle_left_thigh = cf.getDepthAngle(bones_map_legs[0][4], bone_length_left_thigh)
+            bone_length_right_thigh = cf.getDistance_2pts(frames[frame_num]['RHip'][:-1], frames[frame_num]['RKnee'][:-1])
+            angle_right_thigh = cf.getDepthAngle(bones_map_legs[2][4], bone_length_right_thigh)
+            if angle_left_thigh > thighAngleThreshold and angle_right_thigh > thighAngleThreshold:
+                # if yes skip this frame
+                continue
+            
+            for i in range(len(bones_map_legs)):
+            
+                if not include_knees_depth and bones_map_legs[i][-1]:
+                    continue
+
+                bones[bones_map_legs[i][0]].bone.select = True
+                
+                bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_legs[i][1]][:-1], frames[frame_num][bones_map_legs[i][2]][:-1])
+                Angle = cf.getDepthAngle(bones_map_legs[i][4], bone_length)
+                if bones_map_legs[i][5]: 
+                    # only subtracting it's half as when the thigh is pushed forward same goes for the shin, it gets nearer to the camera and appears longer in the pose values
+                    Angle -= perant_angle/2 
+                
+                Angle *= (Angle > 0) # if smallar than zero, set to zero
+                
+                if i == 2: 
+                    if frame_num == 36 or frame_num == 37 or frame_num == 38:
+                        print(frame_num, Angle)
+                        print('bone_length: ', bone_length)
+                        print(frames[frame_num][bones_map_legs[i][1]][:-1], frames[frame_num][bones_map_legs[i][2]][:-1])
+
+                if Angle > thighAngleThreshold:
+                    if i == 0 or i == 2:
+                        leg_moved_forward[bones_map_legs[i][0]][frame_num] = True
+                        
+                    bpy.context.scene.frame_set(frame_num*(24//fps))
+                    bpy.ops.transform.rotate(value=Angle * bones_map_legs[i][3], orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                    bpy.ops.anim.keyframe_insert_menu(type='Rotation')
+                    
+                perant_angle = Angle
+            
+                bones[bones_map_legs[i][0]].bone.select = False
+        ###################################################################  
         
         
         ###################################################################
         ####### XZ plane Thighs Animation #################################
         ###################################################################
-        for x1,x2,x3 in bones_map_Y[2:]:
+        bones_map_thighs = [['ThighLeft', 'LHip', 'LKnee'],
+                            ['ThighRight', 'RHip', 'RKnee']]
+        thighYAngleThreshold = math.radians(5)
+        
+        for x1,x2,x3 in bones_map_thighs:
             bones[x1].bone.select = True  
             for frame_num in range(len(frames)-1):
-
-                bpy.context.scene.frame_set((frame_num+1)*(24//fps))
                 
-                angle_diff = cf.getAngle_2pts(frames[frame_num+1][x2][:-1], frames[frame_num+1][x3][:-1]) - cf.getAngle_2pts(frames[frame_num][x2][:-1], frames[frame_num][x3][:-1])
-                bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+                if leg_moved_forward[x1][frame_num]:
+                    continue
+
+                bpy.context.scene.frame_set(frame_num*(24//fps))
+                
+                angle_diff = cf.getAngle_2pts(frames[frame_num][x2][:-1], frames[frame_num][x3][:-1]) + np.deg2rad(90)
+                if abs(angle_diff) > thighYAngleThreshold:
+                    bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
 
                 angle_left = cf.getAngle_2pts(list(bones['ThighLeft'].head)[:-1], list(bones['ThighLeft'].tail)[:-1])
                 angle_right = cf.getAngle_2pts(list(bones['ThighRight'].head)[:-1], list(bones['ThighRight'].tail)[:-1])
@@ -397,64 +468,8 @@ class animate(bpy.types.Operator):
             
         bones['SpinalCordB4'].bone.select = False
         ###################################################################
-
-        
-        ###################################################################
-        ####### legs (to front& back) Animation ###########################
-        ###################################################################
-        thighAngleThreshold = math.radians(20)
-        include_knees_depth = False
-        
-        # bones_map_legs = [bone in armature, point 1 in pose, point 2 in pose, rotation direction, max length, is child flag]
-        bones_map_legs = [['ThighLeft', 'LHip', 'LKnee', 1, 0, False], 
-                        ['LegLeft', 'LKnee', 'LAnkle', -1, 0, True],
-                        ['ThighRight', 'RHip', 'RKnee', 1, 0, False],
-                        ['LegRight', 'RKnee', 'RAnkle', -1, 0, True]]
-            
-        
-        # Calculating leg bones lengths
-        for i in range(len(bones_map_legs)):
-            if not include_knees_depth and bones_map_legs[i][-1]:
-                continue
                 
-            bone_lengths = []
-            for frame_num in range(len(frames)):
-                bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_legs[i][1]][:-1], frames[frame_num][bones_map_legs[i][2]][:-1])
-                bone_lengths.append(bone_length)
                 
-            bone_lengths.sort(reverse=True)
-            bones_map_legs[i][4] = sum(bone_lengths[: len(frames)//2]) / (len(frames)//2)
-
-
-        for i in range(len(bones_map_legs)):
-            if not include_knees_depth and bones_map_legs[i][-1]:
-                continue
-            
-            perant_angle = 0
-            bones[bones_map_legs[i][0]].bone.select = True
-            for frame_num in range(1,len(frames)):
-                
-                bone_length = cf.getDistance_2pts(frames[frame_num][bones_map_legs[i][1]][:-1], frames[frame_num][bones_map_legs[i][2]][:-1])
-                Angle = cf.getDepthAngle(bones_map_legs[i][4], bone_length)
-                if bones_map_legs[i][5]: 
-                    # only subtracting it's half as when the thigh is pushed forward same goes for the shin, it gets nearer to the camera and appears longer in the pose values
-                    Angle -= perant_angle/2 
-                
-                Angle *= (Angle > 0) # if smallar than zero, set to zero
-
-                if Angle > thighAngleThreshold:
-                    print(frame_num, bones_map_legs[i][0]) 
-                    bpy.context.scene.frame_set(frame_num*(24//fps))
-                    bpy.ops.transform.rotate(value=Angle * bones_map_legs[i][3], orient_axis='X', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(True, False, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
-                    bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-                    
-                perant_angle = Angle
-            
-            bones[bones_map_legs[i][0]].bone.select = False
-                    
-                
-        ###################################################################   
-        
         
         ###################################################################
         ####### arms (to front& back) Animation ###########################
