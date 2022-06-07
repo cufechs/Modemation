@@ -15,6 +15,28 @@ class cf(): # common functions
                'LElbow', 'LWrist', 'MidHip', 'RHip', 'RKnee', 'RAnkle', 'LHip',
                'LKnee', 'LAnkle', 'REye', 'LEye', 'REar', 'LEar', 'LBigToe',
                'LSmallToe', 'LHeel', 'RBigToe', 'RSmallToe', 'RHeel']
+               
+    CAM_DATA = [90, -0.496, -180, -0.008896, 4.5678, -0.44718]
+
+    @staticmethod
+    def setupCamera(scene, c):
+        bpy.ops.object.camera_add()
+        newCamera = bpy.data.objects['Camera']
+        newCamera.name = 'Camera'
+
+        newCamera.rotation_mode = 'XYZ'
+        scene.camera = newCamera
+        
+        scene.camera.rotation_euler[0] = np.deg2rad(c[0])
+        scene.camera.rotation_euler[1] = np.deg2rad(c[1])
+        scene.camera.rotation_euler[2] = np.deg2rad(c[2])
+
+        scene.camera.location.x = c[3]
+        scene.camera.location.y = c[4]
+        scene.camera.location.z = c[5]
+        
+        scene.camera.select_set(False)
+
     
     @staticmethod
     def parse_pose_25(Dir):
@@ -117,14 +139,9 @@ class test(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
     
     def execute(self, context):
+         
         scn = bpy.context.scene
-        bpy.ops.object.mode_set(mode='POSE', toggle=False)
-        bones = scn.objects['Armature'].pose.bones
-        
-        angle_left = cf.getAngle_2pts(list(bones['ThighLeft'].head)[:-1], list(bones['ThighLeft'].tail)[:-1])
-                
-        print('angle_left:', np.rad2deg(angle_left))
-        
+        cf.setupCamera(scn, cf.CAM_DATA)
         
         return {"FINISHED"}
 
@@ -183,7 +200,7 @@ class animate(bpy.types.Operator):
             angle_diff_elbow -= angle_diff_shoulder
             bpy.ops.transform.rotate(value=angle_diff_elbow, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
             bpy.ops.anim.keyframe_insert_menu(type='Rotation')
-            bones[x1].bone.select = False
+            bones[x1].bone.select = False   
         ###################################################################
 
         
@@ -743,14 +760,13 @@ class addReggedModel(bpy.types.Operator):
         obj = bpy.context.scene.objects["Armature"]
         
         obj.rotation_euler.z += np.deg2rad(180)
-
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
- 
+
     def execute(self, context):
+        cf.setupCamera(context.scene, cf.CAM_DATA)
         self.import_model()
         self.add_armature(self)
         self.recenter()
-        
         return {"FINISHED"}
 
 
