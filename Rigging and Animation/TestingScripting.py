@@ -522,9 +522,12 @@ class deleteModel(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
     
     def execute(self, context):
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.ops.object.select_all(action='SELECT')
-        bpy.ops.object.delete()
+        try:
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='SELECT')
+            bpy.ops.object.delete()
+        except:
+            pass
         
         return {"FINISHED"}
     
