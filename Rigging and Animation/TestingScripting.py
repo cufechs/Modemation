@@ -12,7 +12,10 @@ class cf(): # common functions
     
     MODEL_DIR = "\\model\\1_human.obj"
     MODEL_REG_INFO = "\\model\\landmarks_v1.json"
-    INITIAL_MODEL_POSE = "\\initialModelPose.json"
+    INITIAL_MODEL_POSE = "\\model\\initialModelPose.json"
+    HUMAN_IMAGE_POSE = "\\frames\\initial\\humanPose_keypoints.json"
+    HUMAN_IMAGE_DIR = "\\frames\\initial\\"
+    FRAMES_POSE_DIR = "\\frames\\pose\\"
     
     
     MAIN_DIR = str(pathlib.Path(__file__).parent.parent.resolve())
@@ -20,7 +23,6 @@ class cf(): # common functions
                'LElbow', 'LWrist', 'MidHip', 'RHip', 'RKnee', 'RAnkle', 'LHip',
                'LKnee', 'LAnkle', 'REye', 'LEye', 'REar', 'LEar', 'LBigToe',
                'LSmallToe', 'LHeel', 'RBigToe', 'RSmallToe', 'RHeel']
-               
                
     CAM_DATA = [90, -0.496, -180, -0.008896, 4.5678, -0.44718]
 
@@ -36,7 +38,6 @@ class cf(): # common functions
         scene.camera.rotation_euler[0] = np.deg2rad(c[0])
         scene.camera.rotation_euler[1] = np.deg2rad(c[1])
         scene.camera.rotation_euler[2] = np.deg2rad(c[2])
-
         scene.camera.location.x = c[3]
         scene.camera.location.y = c[4]
         scene.camera.location.z = c[5]
@@ -58,7 +59,7 @@ class cf(): # common functions
         return Dict
 
     @staticmethod
-    def load_frames_pose(Dir_pose = '\\frames\\pose\\', fps_rounded=True):     
+    def load_frames_pose(Dir_pose = FRAMES_POSE_DIR, fps_rounded=True):     
         list_json_raw = listdir(cf.MAIN_DIR + Dir_pose)
         list_json = [('frame' + str(i+1) + '_keypoints.json') for i in range(len(list_json_raw)-1) if (str(list_json_raw[i]))[-4:] == "json"]
         frames = []
@@ -146,9 +147,86 @@ class test(bpy.types.Operator):
     
     def execute(self, context):
          
+        initial_model_pose = cf.parse_pose_25(cf.MAIN_DIR + cf.INITIAL_MODEL_POSE)
+        human_pose = cf.parse_pose_25(cf.MAIN_DIR + cf.HUMAN_IMAGE_POSE)
+
+        bones_map_Y = [['ShoulderLeft', 'LShoulder', 'LElbow'],
+                         ['ShoulderRight', 'RShoulder', 'RElbow'],
+                         ['ThighLeft', 'LHip', 'LKnee'],
+                         ['ThighRight', 'RHip', 'RKnee']]
+        bones_map_elbow = [['HandLeft', 'LElbow', 'LWrist'],
+                            ['HandRight', 'RElbow', 'RWrist']]
+
+
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        obj = bpy.context.scene.objects["Armature"]
+        bpy.ops.object.mode_set(mode='POSE', toggle=False)
+
         scn = bpy.context.scene
-        cf.setupCamera(scn, cf.CAM_DATA)
-        
+        bones = scn.objects['Armature'].pose.bones                   
+
+        for x1,x2,x3 in bones_map_Y:
+            bones[x1].bone.select = True  
+            
+            angle_diff = cf.getAngle_2pts(human_pose[x2][:-1], human_pose[x3][:-1]) - cf.getAngle_2pts(initial_model_pose[x2][:-1], initial_model_pose[x3][:-1])
+            bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+
+            bones[x1].bone.select = False
+            
+        for i,(x1,x2,x3) in enumerate(bones_map_elbow):
+            bones[x1].bone.select = True  
+            
+            angle_diff = cf.getAngle_2pts(human_pose[x2][:-1], human_pose[x3][:-1]) - cf.getAngle_2pts(initial_model_pose[x2][:-1], initial_model_pose[x3][:-1])
+            angle_diff_shoulder = cf.getAngle_2pts(human_pose[bones_map_Y[i][1]][:-1], human_pose[bones_map_Y[i][2]][:-1]) - cf.getAngle_2pts(initial_model_pose[bones_map_Y[i][1]][:-1], initial_model_pose[bones_map_Y[i][2]][:-1])
+            angle_diff -= angle_diff_shoulder
+            bpy.ops.transform.rotate(value=angle_diff, orient_axis='Y', orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', constraint_axis=(False, True, False), mirror=False, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False, release_confirm=True)
+
+            bones[x1].bone.select = False
+            
+
+        # Load a new image into the main database
+        list_image = [f for f in sorted(listdir(cf.MAIN_DIR + cf.HUMAN_IMAGE_DIR)) if ((str(f))[-3:] == "png" or (str(f))[-3:] == "jpg" or (str(f))[-4:] == "jpeg")]
+        image = bpy.data.images.load(cf.MAIN_DIR + cf.HUMAN_IMAGE_DIR + list_image[0], check_existing=False)
+
+        # start in object mode
+        obj = bpy.data.objects[bpy.data.objects.keys()[-1]]
+        bpy.ops.object.mode_set(mode='OBJECT')
+        mesh = obj.data
+        vertices = mesh.vertices
+        dimensions = obj.dimensions
+
+        if not mesh.vertex_colors:
+            mesh.vertex_colors.new()
+            
+        color_layer = mesh.vertex_colors.active 
+
+        i = 0
+        minx = 100000000
+        miny = 100000000
+
+        local_pixels = list(image.pixels[:])
+        for poly in mesh.polygons:
+            for idx in poly.loop_indices:
+                loop = mesh.loops[idx]
+                v = loop.vertex_index
+                
+                if minx > vertices[v].co.x:
+                    minx = vertices[v].co.x
+                if miny > vertices[v].co.y:
+                    miny = vertices[v].co.y
+                      
+        for poly in mesh.polygons:
+            for idx in poly.loop_indices:
+                loop = mesh.loops[idx]
+                v = loop.vertex_index
+                
+                xpos= math.floor(image.size[0] * (vertices[v].co.x - minx) / dimensions.x)
+                ypos= math.floor(image.size[1] * (vertices[v].co.y - miny) / dimensions.y)
+                index = ypos * 4 * image.size[0] + xpos * 4
+                
+                color_layer.data[i].color = (local_pixels[index], local_pixels[index + 1], local_pixels[index + 2], local_pixels[index + 3])
+                i += 1
+
         return {"FINISHED"}
 
 class animate(bpy.types.Operator):
@@ -158,7 +236,7 @@ class animate(bpy.types.Operator):
 
     def execute(self, context):
         
-        initial_frame = cf.parse_pose_25(cf.MAIN_DIR + cf.INITIAL_MODEL_POSE)
+        initial_frame = cf.parse_pose_25(cf.MAIN_DIR + cf.HUMAN_IMAGE_POSE)
         bones_map_Y = [['ShoulderLeft', 'LShoulder', 'LElbow'],
                          ['ShoulderRight', 'RShoulder', 'RElbow'],
                          ['ThighLeft', 'LHip', 'LKnee'],
@@ -540,6 +618,14 @@ class animate(bpy.types.Operator):
                     
                 perant_angle = Angle
         ###################################################################'''
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        bpy.data.objects[bpy.data.objects.keys()[-1]].select_set(True)
+        bpy.context.view_layer.objects.active = bpy.data.objects[bpy.data.objects.keys()[-1]]
+        
+        bpy.ops.object.mode_set(mode='VERTEX_PAINT')
 
         return {"FINISHED"}
     
