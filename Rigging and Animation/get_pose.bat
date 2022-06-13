@@ -18,6 +18,8 @@ cd frames
 move human.png initial
 cd .. 
 
+py preprocessing/crop_image.py 
+
 
 ::::::::::::::::::::::::::::::::::::::::
 
