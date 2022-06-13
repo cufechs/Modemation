@@ -10,9 +10,6 @@ if __name__ == '__main__' :
     path = 'frames/initial/' + list_image[0]
     
     img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-    
-    img[:,:,-1] = (img[:,:,-1] >= 150) * 255
-    
 
     im = img[:,:,-1]
     Y,X = im.shape
