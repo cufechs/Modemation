@@ -13,7 +13,7 @@ class cf(): # common functions
     MODEL_DIR = "\\model\\1_human.obj"
     MODEL_REG_INFO = "\\model\\landmarks_v1.json"
     INITIAL_MODEL_POSE = "\\model\\initialModelPose.json"
-    HUMAN_IMAGE_POSE = "\\frames\\initial\\humanPose_keypoints.json"
+    HUMAN_IMAGE_POSE = "\\frames\\initial\\human_keypoints.json"
     HUMAN_IMAGE_DIR = "\\frames\\initial\\"
     FRAMES_POSE_DIR = "\\frames\\pose\\"
     
@@ -138,11 +138,55 @@ class TestPanel(bpy.types.Panel):
        self.layout.operator("mesh.import_model", icon='MESH_CUBE', text="Import Model")
        self.layout.operator("mesh.delete_model", icon='MESH_CUBE', text="Delete Model")           
        self.layout.operator("mesh.animate", icon='MESH_CUBE', text="Animate") 
+       self.layout.operator("mesh.add_texture", icon='MESH_CUBE', text="Add Texture") 
        self.layout.operator("mesh.test", icon='MESH_CUBE', text="Test") 
        
 class test(bpy.types.Operator):
     bl_idname = 'mesh.test'
     bl_label = 'Test'
+    bl_options = {"REGISTER", "UNDO"}
+    
+    def execute(self, context):
+        
+        obj = bpy.data.objects[bpy.data.objects.keys()[-1]]
+        
+        bpy.ops.object.select_all(action='DESELECT') # Deselect all objects
+        bpy.context.view_layer.objects.active = obj   # Make the cube the active object 
+        obj.select_set(True)
+
+        bpy.context.scene.use_nodes = True
+        tree = bpy.data.materials[0].node_tree
+        prev_area = bpy.context.area.type
+        bpy.context.area.type = 'NODE_EDITOR'
+        
+        tree.nodes.remove(tree.nodes.get("Vertex Color"))
+
+
+        # Get Vertex Color Node, create it if it does not exist in the current node tree
+        if tree.nodes.get("Vertex Color") == None:
+            print('--')
+            tree.nodes.new('ShaderNodeVertexColor')
+            vertex_color_node = tree.nodes.get("Vertex Color")
+            bpy.ops.node.translate_attach_remove_on_cancel(TRANSFORM_OT_translate={"value":(-74.9034, 32.1233, 0), "orient_axis_ortho":'X', "orient_type":'GLOBAL', "orient_matrix":((1, 0, 0), (0, 1, 0), (0, 0, 1)), "orient_matrix_type":'GLOBAL', "constraint_axis":(False, False, False), "mirror":False, "use_proportional_edit":False, "proportional_edit_falloff":'SMOOTH', "proportional_size":1, "use_proportional_connected":False, "use_proportional_projected":False, "snap":False, "snap_target":'CLOSEST', "snap_point":(0, 0, 0), "snap_align":False, "snap_normal":(0, 0, 0), "gpencil_strokes":False, "cursor_transform":False, "texture_space":False, "remove_on_cancel":True, "view2d_edge_pan":True, "release_confirm":False, "use_accurate":False, "use_automerge_and_split":False}, NODE_OT_attach={}, NODE_OT_insert_offset={})
+            
+            vertex_color_node.location = (269, 452)
+            #bpy.ops.node.add_search(use_transform=False, node_item='17')
+
+        for n in tree.nodes:
+            print(n)
+
+        bsdf = tree.nodes.get("Principled BSDF") 
+        vertex_color_node = tree.nodes.get("Vertex Color")
+        
+        tree.links.new(vertex_color_node.outputs['Color'], bsdf.inputs['Base Color'])
+                
+        #bpy.context.area.type = prev_area
+
+        return {"FINISHED"}
+
+class add_texture(bpy.types.Operator):
+    bl_idname = 'mesh.add_texture'
+    bl_label = 'Add Texture'
     bl_options = {"REGISTER", "UNDO"}
     
     def execute(self, context):
@@ -228,6 +272,7 @@ class test(bpy.types.Operator):
                 i += 1
 
         return {"FINISHED"}
+
 
 class animate(bpy.types.Operator):
     bl_idname = 'mesh.animate'
@@ -619,13 +664,39 @@ class animate(bpy.types.Operator):
                 perant_angle = Angle
         ###################################################################'''
 
+
+
         bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.ops.object.select_all(action='DESELECT')
         
+        
+        '''
+        bpy.ops.object.select_all(action='DESELECT')
         bpy.data.objects[bpy.data.objects.keys()[-1]].select_set(True)
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.data.objects.keys()[-1]]
         
-        bpy.ops.object.mode_set(mode='VERTEX_PAINT')
+        bpy.context.area.ui_type = 'ShaderNodeTree'
+        
+        bpy.context.scene.use_nodes = True
+        tree = bpy.data.materials[0].node_tree
+        
+        if tree.nodes.get("Vertex Color") == None:
+            print('alo')
+            bpy.ops.node.add_search(use_transform=True, node_item='17')
+            bpy.ops.node.translate_attach_remove_on_cancel(TRANSFORM_OT_translate={"value":(-75.3214, 107.757, 0), "orient_axis_ortho":'X', "orient_type":'GLOBAL', "orient_matrix":((1, 0, 0), (0, 1, 0), (0, 0, 1)), "orient_matrix_type":'GLOBAL', "constraint_axis":(False, False, False), "mirror":False, "use_proportional_edit":False, "proportional_edit_falloff":'SMOOTH', "proportional_size":1, "use_proportional_connected":False, "use_proportional_projected":False, "snap":False, "snap_target":'CLOSEST', "snap_point":(0, 0, 0), "snap_align":False, "snap_normal":(0, 0, 0), "gpencil_strokes":False, "cursor_transform":False, "texture_space":False, "remove_on_cancel":True, "view2d_edge_pan":True, "release_confirm":False, "use_accurate":False, "use_automerge_and_split":False}, NODE_OT_attach={}, NODE_OT_insert_offset={})
+        
+        
+        bsdf = tree.nodes.get("Principled BSDF") 
+        vertex_color_node = tree.nodes.get("Vertex Color")
+        tree.links.new(vertex_color_node.outputs['Color'], bsdf.inputs['Base Color'])
+        
+        
+        bpy.context.area.ui_type = 'VIEW_3D'
+        bpy.ops.object.select_all(action='DESELECT')
+ 
+        '''
+        
+        
+        #bpy.ops.object.mode_set(mode='VERTEX_PAINT')
 
         return {"FINISHED"}
     
@@ -867,6 +938,7 @@ def register() :
     bpy.utils.register_class(addReggedModel)
     bpy.utils.register_class(deleteModel)
     bpy.utils.register_class(animate)
+    bpy.utils.register_class(add_texture)
     bpy.utils.register_class(test)
  
 def unregister() :
@@ -874,6 +946,7 @@ def unregister() :
     bpy.utils.unregister_class(addReggedModel)
     bpy.utils.unregister_class(deleteModel)
     bpy.utils.unregister_class(animate)
+    bpy.utils.unregister_class(add_texture)
     bpy.utils.unregister_class(test)
     
 if __name__ == "__main__":
