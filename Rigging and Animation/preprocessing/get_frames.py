@@ -1,9 +1,8 @@
-import os
-import shutil
-import pathlib
+from os import listdir
 import cv2
 from math import floor
 import argparse
+
 
 
 ap = argparse.ArgumentParser()
@@ -14,31 +13,8 @@ args = vars(ap.parse_args())
 
 if __name__ == '__main__' :
 
-    MAIN_DIR = str(pathlib.Path(__file__).parent.parent.resolve())
-
-    # create 'frames' dir if not there, and if there flush it
-    try: 
-        shutil.rmtree(os.path.join(MAIN_DIR, 'frames'))
-    except:
-        pass
-    finally:
-        os.mkdir('frames') 
-        os.mkdir('frames/pose') 
-        os.mkdir('frames/initial') 
-
-    try: 
-        shutil.rmtree(os.path.join(MAIN_DIR, 'openpose/frames'))
-    except:
-        pass
-    
-    
-    #move image pose
-    list_image = [f for f in sorted(os.listdir('inputs/image/')) if ((str(f))[-3:] == "png" or (str(f))[-3:] == "jpg" or (str(f))[-4:] == "jpeg")]
-    image_extention = list_image[0].split('.')[-1]
-    shutil.copyfile('inputs/image/' + list_image[0], 'frames/initial/humanPose.' + image_extention)
-
     # get video file name
-    list_mp4s = [f for f in sorted(os.listdir('inputs/video/')) if ((str(f))[-3:] == "mp4" or (str(f))[-3:] == "avi" or (str(f))[-3:] == "mkv")]
+    list_mp4s = [f for f in sorted(listdir('inputs/video/')) if ((str(f))[-3:] == "mp4" or (str(f))[-3:] == "avi" or (str(f))[-3:] == "mkv")]
     vidcap = cv2.VideoCapture('inputs/video/' + list_mp4s[0])
 
     min_fps = args['mfps']

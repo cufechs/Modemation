@@ -3,6 +3,7 @@ inputs/*
 frames/
 openpose/
 _Trails/
+HumanSeg/
 
 *.fbx
 
