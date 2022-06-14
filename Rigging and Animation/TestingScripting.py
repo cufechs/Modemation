@@ -24,7 +24,8 @@ class cf(): # common functions
                'LKnee', 'LAnkle', 'REye', 'LEye', 'REar', 'LEar', 'LBigToe',
                'LSmallToe', 'LHeel', 'RBigToe', 'RSmallToe', 'RHeel']
                
-    CAM_DATA = [90, -0.496, -180, -0.008896, 4.5678, -0.44718]
+    CAM_DATA = [90, 0, -180, 0, 5, -0.5]
+    SUN_DATA = [-65, 0, 0, 0, 3, 1]
 
     @staticmethod
     def setupCamera(scene, c):
@@ -43,6 +44,18 @@ class cf(): # common functions
         scene.camera.location.z = c[5]
         
         scene.camera.select_set(False)
+        
+    @staticmethod
+    def setupSun(s):
+        bpy.ops.object.light_add(type='SUN', align='WORLD', location=s[3:], scale=(1, 1, 1))
+        sun = bpy.data.objects['Sun']
+
+        sun.rotation_mode = 'XYZ'
+        sun.rotation_euler[0] = np.deg2rad(s[0])
+        sun.rotation_euler[1] = np.deg2rad(s[1])
+        sun.rotation_euler[2] = np.deg2rad(s[2])
+
+        sun.select_set(False)
 
     
     @staticmethod
@@ -148,43 +161,11 @@ class test(bpy.types.Operator):
     
     def execute(self, context):
         
-        obj = bpy.data.objects[bpy.data.objects.keys()[-1]]
-        
-        bpy.ops.object.select_all(action='DESELECT') # Deselect all objects
-        bpy.context.view_layer.objects.active = obj   # Make the cube the active object 
-        obj.select_set(True)
-
-        bpy.context.scene.use_nodes = True
-        tree = bpy.data.materials[0].node_tree
-        prev_area = bpy.context.area.type
-        bpy.context.area.type = 'NODE_EDITOR'
-        
-        tree.nodes.remove(tree.nodes.get("Vertex Color"))
-
-
-        # Get Vertex Color Node, create it if it does not exist in the current node tree
-        if tree.nodes.get("Vertex Color") == None:
-            print('--')
-            tree.nodes.new('ShaderNodeVertexColor')
-            vertex_color_node = tree.nodes.get("Vertex Color")
-            bpy.ops.node.translate_attach_remove_on_cancel(TRANSFORM_OT_translate={"value":(-74.9034, 32.1233, 0), "orient_axis_ortho":'X', "orient_type":'GLOBAL', "orient_matrix":((1, 0, 0), (0, 1, 0), (0, 0, 1)), "orient_matrix_type":'GLOBAL', "constraint_axis":(False, False, False), "mirror":False, "use_proportional_edit":False, "proportional_edit_falloff":'SMOOTH', "proportional_size":1, "use_proportional_connected":False, "use_proportional_projected":False, "snap":False, "snap_target":'CLOSEST', "snap_point":(0, 0, 0), "snap_align":False, "snap_normal":(0, 0, 0), "gpencil_strokes":False, "cursor_transform":False, "texture_space":False, "remove_on_cancel":True, "view2d_edge_pan":True, "release_confirm":False, "use_accurate":False, "use_automerge_and_split":False}, NODE_OT_attach={}, NODE_OT_insert_offset={})
-            
-            vertex_color_node.location = (269, 452)
-            #bpy.ops.node.add_search(use_transform=False, node_item='17')
-
-        for n in tree.nodes:
-            print(n)
-
-        bsdf = tree.nodes.get("Principled BSDF") 
-        vertex_color_node = tree.nodes.get("Vertex Color")
-        
-        tree.links.new(vertex_color_node.outputs['Color'], bsdf.inputs['Base Color'])
-                
-        #bpy.context.area.type = prev_area
+        cf.setupSun(cf.SUN_DATA)
 
         return {"FINISHED"}
 
-class add_texture(bpy.types.Operator):
+class add_texture(bpy.types.Operator): 
     bl_idname = 'mesh.add_texture'
     bl_label = 'Add Texture'
     bl_options = {"REGISTER", "UNDO"}
@@ -926,6 +907,7 @@ class addReggedModel(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
 
     def execute(self, context):
+        cf.setupSun(cf.SUN_DATA)
         cf.setupCamera(context.scene, cf.CAM_DATA)
         self.import_model()
         self.add_armature(self)
