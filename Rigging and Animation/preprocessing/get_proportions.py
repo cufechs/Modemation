@@ -64,7 +64,7 @@ if __name__ == '__main__' :
         outfile.write(json.dumps(dic))
 
     if args.show:
-        path = 'frames/initial/proportions.png'
+        path = 'test/proportions.png'
         mask = img[:,:,-1].copy()
     
         cv2.line(img, (0, 2*h//5), (w, 2*h//5), (0,0,255,255), 2) # belly
