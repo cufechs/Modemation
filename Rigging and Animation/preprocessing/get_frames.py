@@ -1,11 +1,11 @@
 from os import listdir
 import cv2
 from math import floor
-import argparse
+from argparse import ArgumentParser
 
 
 
-ap = argparse.ArgumentParser()
+ap = ArgumentParser()
 ap.add_argument("-mfps", "-min_frame_sec", default=4, type=int, help="frames to extract per second")
 ap.add_argument("-rf", "-resize_factor", default=1, type=int, help="resizeing factor, 1 -> 1280x720 & 2 -> 640x360")
 args = vars(ap.parse_args())

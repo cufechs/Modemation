@@ -1,5 +1,4 @@
 from os import listdir
-import shutil
 import cv2
 from skimage.color import rgba2rgb
 
@@ -14,7 +13,7 @@ if __name__ == '__main__' :
     im = img[:,:,-1]
     Y,X = im.shape
     
-    pad = 10
+    pad = 0
     
     x1,y1,x2,y2 = 0,0,X-1,Y-1
 

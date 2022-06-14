@@ -4,6 +4,7 @@ frames/
 openpose/
 _Trails/
 HumanSeg/
+test/
 
 *.fbx
 
