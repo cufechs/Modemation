@@ -20,6 +20,8 @@ cd ..
 
 py preprocessing/crop_image.py 
 
+py preprocessing/get_proportions.py -s
+
 
 ::::::::::::::::::::::::::::::::::::::::
 
