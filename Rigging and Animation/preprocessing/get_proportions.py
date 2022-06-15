@@ -65,7 +65,7 @@ if __name__ == '__main__' :
         if x > 0:
             belly_start = i
             break
-    for i in range(w, 0, -1):
+    for i in range(w-1, 0, -1):
         if img[9*h//10, i, -1] > 0:
             belly_end = i
             break
@@ -77,7 +77,7 @@ if __name__ == '__main__' :
         if x > 0:
             chest_start = i
             break
-    for i in range(w, 0, -1):
+    for i in range(w-1, 0, -1):
         if img[expected_chest_h, i, -1] > 0:
             chest_end = i
             break
