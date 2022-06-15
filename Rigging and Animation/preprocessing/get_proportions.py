@@ -24,8 +24,7 @@ if __name__ == '__main__' :
     dic['ankle'] = int(sum(img[9*h//10, :, -1])//(255*2))
     dic['knee'] = int(sum(img[7*h//10, :, -1])//(255*2))
     dic['thigh'] = int(sum(img[11*h//20, :, -1])//(255*2))
-    
-    
+
     mini, neck = w, 0
     for y in range(1*h//20, h//5):
         wid = sum(img[y, :, -1])//255
@@ -59,6 +58,32 @@ if __name__ == '__main__' :
     
     legs_start = (2*h//5 + 11*h//20)//2
     dic['leg_length'] = int(h - (2*h//5 + 11*h//20)//2)
+
+
+    belly_start, belly_end = 0, 0
+    for i, x in enumerate(img[9*h//10, :, -1]):
+        if x > 0:
+            belly_start = i
+            break
+    for i in range(w, 0, -1):
+        if img[9*h//10, i, -1] > 0:
+            belly_end = i
+            break
+    
+    dic['belly_position'] = [belly_start, belly_end]
+
+    chest_start, chest_end = 0, 0
+    for i, x in enumerate(img[expected_chest_h, :, -1]):
+        if x > 0:
+            chest_start = i
+            break
+    for i in range(w, 0, -1):
+        if img[expected_chest_h, i, -1] > 0:
+            chest_end = i
+            break
+    
+    dic['chest_position'] = [chest_start, chest_end]
+
     
     with open('frames/initial/human_proportions.json', 'w') as outfile:
         outfile.write(json.dumps(dic))
