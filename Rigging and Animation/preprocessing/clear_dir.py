@@ -10,14 +10,19 @@ if __name__ == '__main__' :
     # create 'frames' dir if not there, and if there flush it
     try: 
         shutil.rmtree(os.path.join(MAIN_DIR, 'frames'))
+    except:
+        pass
+    finally:
+        os.mkdir('frames') 
+        os.mkdir('frames/pose') 
+        os.mkdir('frames/initial') 
+        
+    try:
         shutil.rmtree(os.path.join(MAIN_DIR, 'test'))
     except:
         pass
     finally:
         os.mkdir('test')
-        os.mkdir('frames') 
-        os.mkdir('frames/pose') 
-        os.mkdir('frames/initial') 
 
     try: 
         shutil.rmtree(os.path.join(MAIN_DIR, 'openpose/frames'))
