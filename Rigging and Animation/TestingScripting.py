@@ -1,8 +1,10 @@
 import bpy
 import json
 import math
+import bmesh
 import pathlib
 import mathutils
+import os
 import numpy as np
 from os import listdir
 from mathutils import Matrix
@@ -10,8 +12,10 @@ from mathutils import Matrix
 
 class cf(): # common functions
     
-    MODEL_DIR = "\\model\\1_human.obj"
-    MODEL_REG_INFO = "\\model\\landmarks_v1.json"
+    EXPORT_PATH = "\\test\\"
+    RENDER_DIR = "\\test\\"
+    MODEL_DIR = "\\model\\finalMesh7.obj"
+    MODEL_REG_INFO = "\\model\\finalLms7.json"
     INITIAL_MODEL_POSE = "\\model\\initialModelPose.json"
     HUMAN_IMAGE_POSE = "\\frames\\initial\\human_keypoints.json"
     HUMAN_IMAGE_DIR = "\\frames\\initial\\"
@@ -28,7 +32,7 @@ class cf(): # common functions
     SUN_DATA = [-65, 0, 0, 0, 3, 1]
 
     @staticmethod
-    def setupCamera(scene, c):
+    def setupCamera(scene, c = CAM_DATA):
         bpy.ops.object.camera_add()
         newCamera = bpy.data.objects['Camera']
         newCamera.name = 'Camera'
@@ -46,8 +50,8 @@ class cf(): # common functions
         scene.camera.select_set(False)
         
     @staticmethod
-    def setupSun(s):
-        bpy.ops.object.light_add(type='SUN', align='WORLD', location=s[3:], scale=(1, 1, 1))
+    def setupSun(s = SUN_DATA):
+        bpy.ops.object.light_add(type='SUN', align='WORLD', location=s[3:])
         sun = bpy.data.objects['Sun']
 
         sun.rotation_mode = 'XYZ'
@@ -70,6 +74,20 @@ class cf(): # common functions
             Dict[cf.JOINTS_MAP[i]] = [arr[j], 1-arr[j+1], arr[j+2]]
 
         return Dict
+    
+    
+    @staticmethod
+    def parse_face_80(Dir):
+        f = open(Dir)
+        data = json.load(f)
+        arr = data['people'][0]['face_keypoints_2d']
+
+        Dict = {}
+        for i in range(70):
+            j=i*3
+            Dict[i] = [arr[j], 1-arr[j+1], arr[j+2]]
+
+        return Dict
 
     @staticmethod
     def load_frames_pose(Dir_pose = FRAMES_POSE_DIR, fps_rounded=True):     
@@ -82,7 +100,7 @@ class cf(): # common functions
             else:
                 frames.append(frames[-1])
 
-        f = open(cf.MAIN_DIR + Dir_pose + '\\my_fps.txt')
+        f = open(cf.MAIN_DIR + Dir_pose + 'my_fps.txt')
         fps = f.read()
         fps = float(fps)
         f.close()
@@ -137,6 +155,13 @@ class cf(): # common functions
             angle = math.degrees(angle)
 
         return angle
+    
+    @staticmethod
+    def readRigInfo(fileName):
+        with open(fileName, "r") as read_file:
+            rigInfo = json.load(read_file)
+        
+        return rigInfo
 
     
 
@@ -152,6 +177,10 @@ class TestPanel(bpy.types.Panel):
        self.layout.operator("mesh.delete_model", icon='MESH_CUBE', text="Delete Model")           
        self.layout.operator("mesh.animate", icon='MESH_CUBE', text="Animate") 
        self.layout.operator("mesh.add_texture", icon='MESH_CUBE', text="Add Texture") 
+       self.layout.operator("mesh.apply_script", icon='MESH_CUBE', text="Apply Script") 
+       self.layout.operator("mesh.render", icon='MESH_CUBE', text="Render to video") 
+       self.layout.operator("mesh.export_model", icon='MESH_CUBE', text="Export Model")      
+       
        self.layout.operator("mesh.test", icon='MESH_CUBE', text="Test") 
        
 class test(bpy.types.Operator):
@@ -161,9 +190,52 @@ class test(bpy.types.Operator):
     
     def execute(self, context):
         
-        cf.setupSun(cf.SUN_DATA)
 
         return {"FINISHED"}
+
+class export_model(bpy.types.Operator): 
+    bl_idname = 'mesh.export_model'
+    bl_label = 'Export Model'
+    bl_options = {"REGISTER", "UNDO"}
+     
+    def execute(self, context):
+        
+        
+        bpy.ops.export_scene.fbx(cf.MAIN_DIR + cf.EXPORT_PATH, type='INVOKE_DEFAULT')
+        
+        return {"FINISHED"}
+
+class render(bpy.types.Operator): 
+    bl_idname = 'mesh.render'
+    bl_label = 'Render to video'
+    bl_options = {"REGISTER", "UNDO"}
+    
+    def execute(self, context):
+
+        print('Rendering ...')
+
+        #Save the previous file path
+        previous_path = bpy.context.scene.render.filepath
+        bpy.context.scene.render.filepath  = cf.MAIN_DIR + cf.RENDER_DIR
+        
+        bpy.ops.render.render(animation=True, write_still=True)
+
+        #Restore the previous filepath
+        bpy.context.scene.render.filepath = previous_path 
+
+        print('Render complete!')
+        
+        return {"FINISHED"}
+
+class apply_script(bpy.types.Operator): 
+    bl_idname = 'mesh.apply_script'
+    bl_label = 'Apply Script'
+    bl_options = {"REGISTER", "UNDO"}
+    
+    def execute(self, context):
+        os.system('"' + cf.MAIN_DIR + "/get_pose.bat" + '"')
+        return {"FINISHED"}
+
 
 class add_texture(bpy.types.Operator): 
     bl_idname = 'mesh.add_texture'
@@ -174,6 +246,7 @@ class add_texture(bpy.types.Operator):
          
         initial_model_pose = cf.parse_pose_25(cf.MAIN_DIR + cf.INITIAL_MODEL_POSE)
         human_pose = cf.parse_pose_25(cf.MAIN_DIR + cf.HUMAN_IMAGE_POSE)
+        face_pose = cf.parse_face_80(cf.MAIN_DIR + cf.HUMAN_IMAGE_POSE)
 
         bones_map_Y = [['ShoulderLeft', 'LShoulder', 'LElbow'],
                          ['ShoulderRight', 'RShoulder', 'RElbow'],
@@ -212,9 +285,19 @@ class add_texture(bpy.types.Operator):
         # Load a new image into the main database
         list_image = [f for f in sorted(listdir(cf.MAIN_DIR + cf.HUMAN_IMAGE_DIR)) if ((str(f))[-3:] == "png" or (str(f))[-3:] == "jpg" or (str(f))[-4:] == "jpeg")]
         image = bpy.data.images.load(cf.MAIN_DIR + cf.HUMAN_IMAGE_DIR + list_image[0], check_existing=False)
+        
+        rigInfo = cf.readRigInfo(cf.MAIN_DIR + cf.MODEL_REG_INFO)
+    
+        keypoints = {}
+        for keypoint in rigInfo:
+            keypoints[keypoint["id"]] = keypoint["coordinates"]
+        
+        obj = None
+        for item in scn.objects:
+            if item.type == 'MESH':
+                obj = item
+                break
 
-        # start in object mode
-        obj = bpy.data.objects[bpy.data.objects.keys()[-1]]
         bpy.ops.object.mode_set(mode='OBJECT')
         mesh = obj.data
         vertices = mesh.vertices
@@ -239,18 +322,117 @@ class add_texture(bpy.types.Operator):
                     minx = vertices[v].co.x
                 if miny > vertices[v].co.y:
                     miny = vertices[v].co.y
-                      
+
+        chin = keypoints['chin']  
+        head_top = keypoints['head.top']
+        #top of head color (hair)
+        xpos_h= math.floor(image.size[0] * (head_top[0] - minx)/ dimensions.x)
+        ypos_h= math.floor(image.size[1] * (head_top[1] - miny) / dimensions.y) - 1
+        index_h = ypos_h * 4* image.size [0] + xpos_h * 4
+        chin_in_image = face_pose[8]
+        face_left = face_pose[16]
+        face_right = face_pose[0]
+        face_width = math.floor(abs(face_right[0] - face_left[0]))
+        face_height = math.floor(abs(0 - chin_in_image[1]))
         for poly in mesh.polygons:
             for idx in poly.loop_indices:
                 loop = mesh.loops[idx]
                 v = loop.vertex_index
                 
-                xpos= math.floor(image.size[0] * (vertices[v].co.x - minx) / dimensions.x)
+                xpos= math.floor(image.size[0] * (vertices[v].co.x - minx)/ dimensions.x)
                 ypos= math.floor(image.size[1] * (vertices[v].co.y - miny) / dimensions.y)
-                index = ypos * 4 * image.size[0] + xpos * 4
+                index = ypos * 4* image.size [0] + xpos * 4
                 
-                color_layer.data[i].color = (local_pixels[index], local_pixels[index + 1], local_pixels[index + 2], local_pixels[index + 3])
+                if vertices[v].co.y >= chin[1] and vertices[v].co.z < head_top[2]:
+                    color_layer.data[i].color = (local_pixels[index_h], local_pixels[index_h + 1], local_pixels[index_h + 2], local_pixels[index_h + 3])
+                elif vertices[v].co.y >= chin[1]: #front face
+                    xpos= math.floor(image.size[0] * (vertices[v].co.x - minx)/ dimensions.x)
+                    ypos= math.floor(image.size[1] - (face_height * (head_top[1] - vertices[v].co.y) / (head_top[1] - chin[1])))
+                    index = ypos * 4* image.size[0] + xpos * 4
+                    print(ypos ,(vertices[v].co.x - minx) / image.size[0], image.size[1] - (face_height * (head_top[1] - vertices[v].co.y) / (head_top[1] - chin[1])))
+                    color_layer.data[i].color = (local_pixels[index], local_pixels[index + 1], local_pixels[index + 2], local_pixels[index + 3])
+                else:
+                    color_layer.data[i].color = (local_pixels[index], local_pixels[index + 1], local_pixels[index + 2], local_pixels[index + 3])
                 i += 1
+
+
+        bpy.ops.object.select_all(action='DESELECT') # Deselect all objects
+        bpy.context.view_layer.objects.active = obj   # Make the cube the active object 
+        obj.select_set(True)
+
+        bpy.context.scene.use_nodes = True
+        tree = obj.active_material.node_tree
+        prev_area = bpy.context.area.type
+        bpy.context.area.type = 'NODE_EDITOR'
+
+        # Get Vertex Color Node, create it if it does not exist in the current node tree
+        vertex_color_node = tree.nodes.get("Vertex Color")
+        if vertex_color_node == None:
+            vertex_color_node = tree.nodes.new('ShaderNodeVertexColor')
+
+        bsdf = tree.nodes.get("Principled BSDF") 
+        tree.links.new(vertex_color_node.outputs['Color'], bsdf.inputs['Base Color'])
+
+        bpy.context.area.type = prev_area
+        
+        
+        ####################################################
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+
+        me = obj.data
+        bm = bmesh.from_edit_mesh(me)
+
+        vertex_indices_with_adjvert = {}
+        for v in bm.verts:
+            vert_and_links = []
+            for e in v.link_edges:
+                vert_and_links.append(e.other_vert(v).index)
+            
+            vertex_indices_with_adjvert[v.index] = vert_and_links
+            
+        ######
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        if not me.vertex_colors:
+            me.vertex_colors.new()
+            
+        color_layer = me.vertex_colors.active 
+
+        i = 0
+        for poly in me.polygons:
+            for idx in poly.loop_indices:
+                loop = me.loops[idx]
+                v = loop.vertex_index
+                
+                color = [0.0, 0.0, 0.0]
+                count = 0
+                if color_layer.data[i].color[3] == 0:
+                    for av in vertex_indices_with_adjvert[v]:
+                        av_color = color_layer.data[av].color
+                        if color_layer.data[av].color[3] != 0:
+                            count = count + 1
+                            color[0] = color[0] + av_color[0]
+                            color[1] = color[1] + av_color[1]
+                            color[2] = color[2] + av_color[2]
+                    
+                    if count != 0:
+                        color_layer.data[i].color = (color[0] / count, color[1] / count, color[2] / count, 1.0)
+                        
+                i += 1
+        
+        ####################################################
+        
+        
+        
+        bpy.ops.object.select_all(action='DESELECT') # Deselect all objects
+        armature = scn.objects['Armature']
+        bpy.context.view_layer.objects.active = armature
+        armature.select_set(True)
+        
+        #scn = bpy.context.scene
+        #bpy.ops.object.mode_set(mode='POSE', toggle=False)
+
 
         return {"FINISHED"}
 
@@ -646,8 +828,7 @@ class animate(bpy.types.Operator):
         ###################################################################'''
 
 
-
-        bpy.ops.object.mode_set(mode='OBJECT')
+        
         
         
         '''
@@ -702,12 +883,7 @@ class addReggedModel(bpy.types.Operator):
     bl_idname = 'mesh.import_model'
     bl_label = 'Import Model'
     bl_options = {"REGISTER", "UNDO"}
-    
-    def readRigInfo(self, fileName):
-        with open(fileName, "r") as read_file:
-            rigInfo = json.load(read_file)
-        
-        return rigInfo
+
     
     def import_model(context):
         bpy.ops.object.select_all(action='DESELECT') # Deselect all objects
@@ -724,7 +900,7 @@ class addReggedModel(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         ebs = obArm.data.edit_bones
 
-        rigInfo = self.readRigInfo(cf.MAIN_DIR + cf.MODEL_REG_INFO)
+        rigInfo = cf.readRigInfo(cf.MAIN_DIR + cf.MODEL_REG_INFO)
     
         keypoints = {}
         
@@ -907,8 +1083,8 @@ class addReggedModel(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
 
     def execute(self, context):
-        cf.setupSun(cf.SUN_DATA)
-        cf.setupCamera(context.scene, cf.CAM_DATA)
+        cf.setupSun()
+        cf.setupCamera(context.scene)
         self.import_model()
         self.add_armature(self)
         self.recenter()
@@ -921,6 +1097,9 @@ def register() :
     bpy.utils.register_class(deleteModel)
     bpy.utils.register_class(animate)
     bpy.utils.register_class(add_texture)
+    bpy.utils.register_class(apply_script)
+    bpy.utils.register_class(render)
+    bpy.utils.register_class(export_model)
     bpy.utils.register_class(test)
  
 def unregister() :
@@ -929,7 +1108,11 @@ def unregister() :
     bpy.utils.unregister_class(deleteModel)
     bpy.utils.unregister_class(animate)
     bpy.utils.unregister_class(add_texture)
+    bpy.utils.unregister_class(apply_script)
+    bpy.utils.unregister_class(render)
+    bpy.utils.unregister_class(export_model)
     bpy.utils.unregister_class(test)
+    
     
 if __name__ == "__main__":
     register()
