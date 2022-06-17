@@ -1,6 +1,10 @@
-#!/bin/bash
+
+cd "S:\Semester 10 (Spring-2022)\Graduation project\Modemation\Rigging and Animation"
+
 
 py preprocessing/clear_dir.py
+
+
 
 
 :: Segmenting input image
@@ -17,26 +21,42 @@ move human.png frames
 cd frames
 move human.png initial
 cd .. 
+::::::::::::::::::::::::::::::::::::::::
 
-py preprocessing/crop_image.py 
 
-py preprocessing/get_proportions.py -s
+
+:: Get input image pose
+py preprocessing/crop_image_1.py
+move frames openpose
+cd openpose
+bin\\OpenPoseDemo.exe --image_dir frames/initial/ --face --write_json frames/initial/
+move frames ..
+cd ..
+::::::::::::::::::::::::::::::::::::::::
+
+
+
+:: Model building
 
 
 ::::::::::::::::::::::::::::::::::::::::
+
 
 
 :: Getting frames
-py preprocessing/get_frames.py -mfps 1 -rf 4
+::py preprocessing/get_frames.py -mfps 1 -rf 4
 
-move frames openpose
+::move frames openpose
+::cd openpose
 
-cd openpose
-
-bin\\OpenPoseDemo.exe --image_dir frames/ --write_json frames/pose/
-bin\\OpenPoseDemo.exe --image_dir frames/initial/ --write_json frames/initial/
-
-move frames ..
+::bin\\OpenPoseDemo.exe --image_dir frames/ --write_json frames/pose/
+::move frames ..
+::cd ..
 
 ::::::::::::::::::::::::::::::::::::::::
 
+
+:: Postprocessing on inpit image to fit as a texture
+py preprocessing/crop_image_2.py 
+py preprocessing/get_proportions.py -s
+::::::::::::::::::::::::::::::::::::::::
