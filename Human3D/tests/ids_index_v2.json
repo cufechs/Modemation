@@ -1,0 +1,270 @@
+[
+    {
+        "id": "nosetip",
+        "index": 9008
+    },
+    {
+        "id": "nose.right",
+        "index": 2743
+    },
+    {
+        "id": "nose.left",
+        "index": 1609
+    },
+    {
+        "id": "chin",
+        "index": 8751
+    },
+    {
+        "id": "eye.right.right",
+        "index": 2436
+    },
+    {
+        "id": "eye.right.left",
+        "index": 9090
+    },
+    {
+        "id": "eye.left.right",
+        "index": 9287
+    },
+    {
+        "id": "eye.left.left",
+        "index": 1146
+    },
+    {
+        "id": "head.front",
+        "index": 8994
+    },
+    {
+        "id": "head.right",
+        "index": 3040
+    },
+    {
+        "id": "head.left",
+        "index": 1980
+    },
+    {
+        "id": "head.top",
+        "index": 9011
+    },
+    {
+        "id": "lip.right",
+        "index": 2827
+    },
+    {
+        "id": "lip.left",
+        "index": 1712
+    },
+    {
+        "id": "head.back",
+        "index": 8967
+    },
+    {
+        "id": "chest.front.center",
+        "index": 5945
+    },
+    {
+        "id": "chest.right",
+        "index": 8177
+    },
+    {
+        "id": "chest.left",
+        "index": 5443
+    },
+    {
+        "id": "chest.back.center",
+        "index": 5500
+    },
+    {
+        "id": "neckstart.front.center",
+        "index": 5519
+    },
+    {
+        "id": "neckstart.back.center",
+        "index": 5920
+    },
+    {
+        "id": "lip.top.center",
+        "index": 8987
+    },
+    {
+        "id": "lip.bottom.center",
+        "index": 8947
+    },
+    {
+        "id": "belly.front.center",
+        "index": 5939
+    },
+    {
+        "id": "shoulder.right.top",
+        "index": 6175
+    },
+    {
+        "id": "shoulder.left.top",
+        "index": 3414
+    },
+    {
+        "id": "belly.right",
+        "index": 6026
+    },
+    {
+        "id": "belly.left",
+        "index": 3263
+    },
+    {
+        "id": "belly.back.center",
+        "index": 5494
+    },
+    {
+        "id": "shoulder.right.front",
+        "index": 7249
+    },
+    {
+        "id": "shoulder.left.front",
+        "index": 4513
+    },
+    {
+        "id": "shoulder.right.side",
+        "index": 6822
+    },
+    {
+        "id": "shoulder.left.side",
+        "index": 4078
+    },
+    {
+        "id": "shoulder.right.back",
+        "index": 7239
+    },
+    {
+        "id": "shoulder.left.back",
+        "index": 4503
+    },
+    {
+        "id": "pampers.front",
+        "index": 5601
+    },
+    {
+        "id": "pampers.back",
+        "index": 5596
+    },
+    {
+        "id": "waist.front.center",
+        "index": 5946
+    },
+    {
+        "id": "waist.back.center",
+        "index": 4297
+    },
+    {
+        "id": "waist.right",
+        "index": 7150
+    },
+    {
+        "id": "waist.left",
+        "index": 4414
+    },
+    {
+        "id": "knee.right.front",
+        "index": 6438
+    },
+    {
+        "id": "knee.left.front",
+        "index": 3677
+    },
+    {
+        "id": "knee.right.back",
+        "index": 6441
+    },
+    {
+        "id": "knee.left.back",
+        "index": 3680
+    },
+    {
+        "id": "ankle.right.inside",
+        "index": 8680
+    },
+    {
+        "id": "ankle.left.inside",
+        "index": 8892
+    },
+    {
+        "id": "ankle.right.outside",
+        "index": 8575
+    },
+    {
+        "id": "ankle.left.outside",
+        "index": 5882
+    },
+    {
+        "id": "foot.right.bottom.center",
+        "index": 8686
+    },
+    {
+        "id": "foot.left.bottom.center",
+        "index": 8898
+    },
+    {
+        "id": "elbow.right",
+        "index": 7034
+    },
+    {
+        "id": "elbow.left",
+        "index": 4342
+    },
+    {
+        "id": "midhand.right.center",
+        "index": 7026
+    },
+    {
+        "id": "midhand.left.center",
+        "index": 4299
+    },
+    {
+        "id": "wrist.right.front",
+        "index": 7422
+    },
+    {
+        "id": "wrist.left.front",
+        "index": 4686
+    },
+    {
+        "id": "wrist.right.back",
+        "index": 7409
+    },
+    {
+        "id": "wrist.left.back",
+        "index": 4673
+    },
+    {
+        "id": "fist.right.fist",
+        "index": 7795
+    },
+    {
+        "id": "fist.left.fist",
+        "index": 5058
+    },
+    {
+        "id": "thigh.right.inner",
+        "index": 6853
+    },
+    {
+        "id": "thigh.right.outer",
+        "index": 6238
+    },
+    {
+        "id": "thigh.left.inner",
+        "index": 4109
+    },
+    {
+        "id": "thigh.left.outer",
+        "index": 3477
+    },
+    {
+        "id": "neck.right.upper",
+        "index": 2254
+    },
+    {
+        "id": "neck.right.lower",
+        "index": 6667
+    }
+]
