@@ -16,7 +16,8 @@ if __name__ == '__main__' :
     pad = 0
     
     x1,y1,x2,y2 = 0,0,X-1,Y-1
-
+    
+    
     for x in range(pad, X):
         if sum(im[:,x]) > 1:
             x1 = x
@@ -36,5 +37,5 @@ if __name__ == '__main__' :
         if sum(im[y,:]) > 1:
             y2 = y
             break 
-            
+
     cv2.imwrite(path, img[y1:y2+1, x1:x2+1, :])    

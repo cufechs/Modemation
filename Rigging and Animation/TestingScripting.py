@@ -200,7 +200,6 @@ class export_model(bpy.types.Operator):
      
     def execute(self, context):
         
-        
         bpy.ops.export_scene.fbx(cf.MAIN_DIR + cf.EXPORT_PATH, type='INVOKE_DEFAULT')
         
         return {"FINISHED"}
@@ -233,7 +232,7 @@ class apply_script(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
     
     def execute(self, context):
-        os.system('"' + cf.MAIN_DIR + "/get_pose.bat" + '"')
+        os.system('"' + cf.MAIN_DIR + "/prepocessing.bat" + '"')
         return {"FINISHED"}
 
 
