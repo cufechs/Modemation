@@ -5,7 +5,8 @@ from argparse import ArgumentParser
 
 ap = ArgumentParser()
 ap.add_argument('-s', '--show', action='store_true')
-args = ap.parse_args()
+ap.add_argument("-out_dir", "-output_directory", default='frames/initial/human_proportions.json', type=str, help="output file directory")
+args = vars(ap.parse_args())
 
 
 if __name__ == '__main__' :
@@ -85,10 +86,14 @@ if __name__ == '__main__' :
     dic['chest_position'] = [chest_start, chest_end]
 
     
-    with open('frames/initial/human_proportions.json', 'w') as outfile:
+    with open(args['out_dir'], 'w') as outfile:
         outfile.write(json.dumps(dic))
+        
+    if args['out_dir'] != 'frames/initial/human_proportions.json':
+        with open('frames/initial/human_proportions.json', 'w') as outfile:
+            outfile.write(json.dumps(dic))
 
-    if args.show:
+    if args['show']:
         path = 'test/proportions.png'
         mask = img[:,:,-1].copy()
     
