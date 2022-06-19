@@ -28,4 +28,27 @@ if __name__ == '__main__' :
         shutil.rmtree(os.path.join(MAIN_DIR, 'openpose/frames'))
     except:
         pass
-   
+        
+    try: 
+        shutil.rmtree(os.path.join(MAIN_DIR, 'model_output'))
+    except:
+        pass
+        
+    
+    HUMAN3D_DIR = str(pathlib.Path(__file__).parent.parent.parent.resolve()) + '\\Human3D'
+    try: 
+        shutil.rmtree(os.path.join(HUMAN3D_DIR, 'model_output'))
+    except:
+        pass
+    finally:
+        os.mkdir(os.path.join(HUMAN3D_DIR, 'model_output')) 
+    
+    try:
+        os.remove(HUMAN3D_DIR + '\\data\\human_proportions.json')
+    except:
+        pass
+    
+    try:
+        os.remove(HUMAN3D_DIR + '\\human_proportions.json')
+    except:
+        pass
