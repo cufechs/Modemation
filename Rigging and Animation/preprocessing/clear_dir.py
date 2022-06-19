@@ -43,6 +43,11 @@ if __name__ == '__main__' :
     finally:
         os.mkdir(os.path.join(HUMAN3D_DIR, 'model_output')) 
     
+    try: 
+        shutil.rmtree(os.path.join(str(pathlib.Path(__file__).parent.parent.parent.resolve()), 'model_output'))
+    except:
+        pass
+    
     try:
         os.remove(HUMAN3D_DIR + '\\data\\human_proportions.json')
     except:
