@@ -1,5 +1,6 @@
 import cv2
 import json
+import numpy as np
 from os import listdir
 from skimage.color import rgba2rgb
 
@@ -32,10 +33,13 @@ if __name__ == '__main__' :
         mid_x += face_points[pt][0]
         
     mid_x = int(mid_x // len(mid_face_pts))
-
+    img_shape = img.shape
+    img_2 = None
     if mid_x > img.shape[1] - mid_x:
-        img = img[:,(mid_x*2 - img.shape[1]):,:]
+        img_2 = np.zeros((img_shape[0], img_shape[1] + (mid_x*2 - img_shape[1]), img_shape[2]))
+        img_2[:,:img.shape[1],:] = img
     else:
-        img = img[:,:(img.shape[1] - mid_x*2),:]
+        img_2 = np.zeros((img_shape[0], img_shape[1] + (img_shape[1] - mid_x*2), img_shape[2]))
+        img_2[:,-img.shape[1]:,:] = img
     
-    cv2.imwrite(path, img)    
+    cv2.imwrite(path, img_2)    
