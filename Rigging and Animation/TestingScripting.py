@@ -14,8 +14,8 @@ class cf(): # common functions
     
     EXPORT_PATH = "\\test\\"
     RENDER_DIR = "\\test\\"
-    MODEL_DIR = "\\model\\finalMesh7.obj"
-    MODEL_REG_INFO = "\\model\\finalLms7.json"
+    MODEL_DIR = "\\model_output\\mesh.obj"
+    MODEL_REG_INFO = "\\model_output\\rigInfo.json"
     INITIAL_MODEL_POSE = "\\model\\initialModelPose.json"
     HUMAN_IMAGE_POSE = "\\frames\\initial\\human_keypoints.json"
     HUMAN_IMAGE_DIR = "\\frames\\initial\\"
@@ -28,7 +28,7 @@ class cf(): # common functions
                'LKnee', 'LAnkle', 'REye', 'LEye', 'REar', 'LEar', 'LBigToe',
                'LSmallToe', 'LHeel', 'RBigToe', 'RSmallToe', 'RHeel']
                
-    CAM_DATA = [90, 0, -180, 0, 5, -0.5]
+    CAM_DATA = [85, 0, -180, 0, 600, -0.5]
     SUN_DATA = [-65, 0, 0, 0, 3, 1]
 
     @staticmethod
@@ -173,15 +173,15 @@ class TestPanel(bpy.types.Panel):
     bl_category = "Test Panel"
 
     def draw(self, context):
-       self.layout.operator("mesh.import_model", icon='MESH_CUBE', text="Import Model")
-       self.layout.operator("mesh.delete_model", icon='MESH_CUBE', text="Delete Model")           
-       self.layout.operator("mesh.animate", icon='MESH_CUBE', text="Animate") 
-       self.layout.operator("mesh.add_texture", icon='MESH_CUBE', text="Add Texture") 
-       self.layout.operator("mesh.apply_script", icon='MESH_CUBE', text="Apply Script") 
-       self.layout.operator("mesh.render", icon='MESH_CUBE', text="Render to video") 
-       self.layout.operator("mesh.export_model", icon='MESH_CUBE', text="Export Model")      
-       
-       self.layout.operator("mesh.test", icon='MESH_CUBE', text="Test") 
+        self.layout.operator("mesh.apply_script", icon='MESH_CUBE', text="1- Apply Script") 
+        self.layout.operator("mesh.import_model", icon='MESH_CUBE', text="2- Import Model")
+        self.layout.operator("mesh.add_texture", icon='MESH_CUBE', text="3- Add Texture") 
+        self.layout.operator("mesh.animate", icon='MESH_CUBE', text="4- Animate")
+        self.layout.operator("mesh.render", icon='MESH_CUBE', text="Render to video") 
+        self.layout.operator("mesh.export_model", icon='MESH_CUBE', text="Export Model")      
+        self.layout.operator("mesh.delete_model", icon='MESH_CUBE', text="Delete Model")           
+ 
+        self.layout.operator("mesh.test", icon='MESH_CUBE', text="Test") 
        
 class test(bpy.types.Operator):
     bl_idname = 'mesh.test'
