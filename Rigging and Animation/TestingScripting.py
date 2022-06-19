@@ -325,8 +325,8 @@ class add_texture(bpy.types.Operator):
         chin = keypoints['chin']  
         head_top = keypoints['head.top']
         #top of head color (hair)
-        xpos_h= math.floor(image.size[0] * (head_top[0] - minx)/ dimensions.x)
-        ypos_h= math.floor(image.size[1] * (head_top[1] - miny) / dimensions.y) - 1
+        xpos_h = math.floor(image.size[0] * (head_top[0] - minx)/ dimensions.x)
+        ypos_h = math.floor(image.size[1] * (head_top[1] - miny) / dimensions.y) - 1
         index_h = ypos_h * 4* image.size [0] + xpos_h * 4
         chin_in_image = face_pose[8]
         face_left = face_pose[16]
@@ -338,17 +338,16 @@ class add_texture(bpy.types.Operator):
                 loop = mesh.loops[idx]
                 v = loop.vertex_index
                 
-                xpos= math.floor(image.size[0] * (vertices[v].co.x - minx)/ dimensions.x)
-                ypos= math.floor(image.size[1] * (vertices[v].co.y - miny) / dimensions.y)
+                xpos = math.floor(image.size[0] * (vertices[v].co.x - minx)/ dimensions.x)
+                ypos = math.floor(image.size[1] * (vertices[v].co.y - miny) / dimensions.y)
                 index = ypos * 4* image.size [0] + xpos * 4
                 
                 if vertices[v].co.y >= chin[1] and vertices[v].co.z < head_top[2]:
                     color_layer.data[i].color = (local_pixels[index_h], local_pixels[index_h + 1], local_pixels[index_h + 2], local_pixels[index_h + 3])
                 elif vertices[v].co.y >= chin[1]: #front face
-                    xpos= math.floor(image.size[0] * (vertices[v].co.x - minx)/ dimensions.x)
-                    ypos= math.floor(image.size[1] - (face_height * (head_top[1] - vertices[v].co.y) / (head_top[1] - chin[1])))
+                    xpos = math.floor(image.size[0] * (vertices[v].co.x - minx)/ dimensions.x)
+                    ypos = math.floor(image.size[1] - (face_height * (head_top[1] - vertices[v].co.y) / (head_top[1] - chin[1]))) - 1
                     index = ypos * 4* image.size[0] + xpos * 4
-                    print(ypos ,(vertices[v].co.x - minx) / image.size[0], image.size[1] - (face_height * (head_top[1] - vertices[v].co.y) / (head_top[1] - chin[1])))
                     color_layer.data[i].color = (local_pixels[index], local_pixels[index + 1], local_pixels[index + 2], local_pixels[index + 3])
                 else:
                     color_layer.data[i].color = (local_pixels[index], local_pixels[index + 1], local_pixels[index + 2], local_pixels[index + 3])
