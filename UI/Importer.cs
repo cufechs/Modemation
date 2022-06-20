@@ -120,6 +120,7 @@ namespace GP
 
             ImGui.Text("Current Operation: " + currentOperation);
             ImGui.Text("Progress: " + percentage.ToString() + "%");
+            ImGui.Text("Directory: " + projDirectory);
 
             ImGui.End();
         }
