@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "xqw/MwuDnGgihTkXB2Pj8gfW+rBd/Y3xz/HvqpGvuNegkWQ7KyxVdRHM3D3AHxQ7bRv2CMC4YkMqOFDdeRmPiw==",
+  "dgSpecHash": "E3DLBRoE3N/NQUKxu2qFMY5z5dw5+S0YisNRbkdqDMzu1MBL5j0SevCAEPcqaF/DLGbBfMfdeSPk9xOQPlO2Qg==",
   "success": true,
-  "projectFilePath": "C:\\FN_Engine_Projects\\GP\\GP.csproj",
+  "projectFilePath": "C:\\Users\\ossya\\Documents\\BlenderScripting\\UI\\GP.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ossya\\.nuget\\packages\\assimpnet\\4.1.0\\assimpnet.4.1.0.nupkg.sha512",
     "C:\\Users\\ossya\\.nuget\\packages\\microsoft.netcore.platforms\\2.0.0\\microsoft.netcore.platforms.2.0.0.nupkg.sha512",

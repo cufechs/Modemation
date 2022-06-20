@@ -19,6 +19,7 @@ namespace GP
         private int frameSamplingRate = 6;
         private int currentItem = 1;
         private int percentage = 0;
+        private string currentOperation = "Nothing";
 
         public enum SampleRate { Four=4, Six=6, Nine=9};
 
@@ -117,6 +118,7 @@ namespace GP
                 }
             }
 
+            ImGui.Text("Current Operation: " + currentOperation);
             ImGui.Text("Progress: " + percentage.ToString() + "%");
 
             ImGui.End();
@@ -124,6 +126,7 @@ namespace GP
 
         void StartOperation()
         {
+            currentOperation = "Image Preprocessing...";
             string[] imagePreprocessing = new string[]
             {
                 "cd " + projDirectory, //Go to the existing directory
@@ -148,6 +151,56 @@ namespace GP
             percentage = 5;
 
             //////////////////////////////////////////
+            currentOperation = "Pose Estimation...";
+            string[] poseEstimation = new string[]
+            {
+                "cd " + projDirectory, //Go to the existing directory
+                "py preprocessing/get_frames.py -mfps " + frameSamplingRate.ToString() + " -rf 4",
+                "move frames openpose",
+                "cd openpose",
+                "bin\\OpenPoseDemo.exe --image_dir frames/ --write_json frames/pose/",
+                "bin\\OpenPoseDemo.exe --image_dir frames/initial/ --face --write_json frames/initial/",
+                "move frames ..",
+                "cd .."
+            };
+
+            Utility.ExecuteCommand(poseEstimation, projDirectory);
+
+            percentage = 65;
+
+            //////////////////////////////////////////
+            currentOperation = "Cropping Input Image...";
+            string[] croppingImage = new string[]
+            {
+                "cd " + projDirectory, //Go to the existing directory
+                "py preprocessing/crop_image_2.py",
+                "py preprocessing/get_proportions.py -out_dir human_proportions.json -s"
+            };
+
+            Utility.ExecuteCommand(croppingImage, projDirectory);
+
+            percentage = 70;
+
+            //////////////////////////////////////////
+            currentOperation = "Building Model...";
+            string[] buildingModel = new string[]
+            {
+                "cd " + projDirectory, //Go to the existing directory
+                "move human_proportions.json ..",
+                "cd ..",
+                "move human_proportions.json Human3D",
+                "cd Human3D",
+                "move human_proportions.json data",
+                ".\\build\\Debug\\fitting models/pcaModel_male.csv models/meanMesh.csv data/referenceObj.obj data/ids_index_v2.json data/human_proportions.json model_output/mesh.obj model_output/rigInfo.json",
+                "move model_output ..",
+                "cd ..",
+                "move model_output \"Rigging and Animation\"",
+                "cd \"Rigging and Animation\""
+            };
+
+            Utility.ExecuteCommand(buildingModel, projDirectory);
+
+            percentage = 100;
         }
     }
 }
