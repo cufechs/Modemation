@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Diagnostics;
 
 namespace GP
 {
@@ -33,7 +34,7 @@ namespace GP
             string currentDirectory = Directory.GetCurrentDirectory();
             projDirectory = currentDirectory.Remove(currentDirectory.LastIndexOf('\\'));
             projDirectory = projDirectory.Remove(projDirectory.LastIndexOf('\\'));
-            projDirectory += "\\Rigging and Animation";
+            projDirectory += "\\RiggingAndAnimation";
         }
 
         public override void Update(GameTime gameTime)
@@ -120,7 +121,6 @@ namespace GP
 
             ImGui.Text("Current Operation: " + currentOperation);
             ImGui.Text("Progress: " + percentage.ToString() + "%");
-            ImGui.Text("Directory: " + projDirectory);
 
             ImGui.End();
         }
@@ -130,7 +130,7 @@ namespace GP
             currentOperation = "Image Preprocessing...";
             string[] imagePreprocessing = new string[]
             {
-                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
+                "cd " + projDirectory, //Go to the existing directory
                 "py preprocessing/clear_dir.py",
                 "py preprocessing/get_image.py ",
                 "cd HumanSeg",
@@ -147,15 +147,15 @@ namespace GP
                 "py preprocessing/crop_image_1.py"
             };
 
-            Utility.ExecuteCommand(imagePreprocessing, projDirectory);
+            ExecuteCommand(imagePreprocessing, projDirectory);
 
             percentage = 5;
-
+            
             //////////////////////////////////////////
             currentOperation = "Pose Estimation...";
             string[] poseEstimation = new string[]
             {
-                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
+                "cd " + projDirectory, //Go to the existing directory
                 "py preprocessing/get_frames.py -mfps " + frameSamplingRate.ToString() + " -rf 4",
                 "move frames openpose",
                 "cd openpose",
@@ -173,7 +173,7 @@ namespace GP
             currentOperation = "Cropping Input Image...";
             string[] croppingImage = new string[]
             {
-                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
+                "cd " + projDirectory, //Go to the existing directory
                 "py preprocessing/crop_image_2.py",
                 "py preprocessing/get_proportions.py -out_dir human_proportions.json -s"
             };
@@ -186,7 +186,7 @@ namespace GP
             currentOperation = "Building Model...";
             string[] buildingModel = new string[]
             {
-                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
+                "cd " + projDirectory, //Go to the existing directory
                 "move human_proportions.json ..",
                 "cd ..",
                 "move human_proportions.json Human3D",
@@ -195,13 +195,36 @@ namespace GP
                 ".\\build\\Debug\\fitting models/pcaModel_male.csv models/meanMesh.csv data/referenceObj.obj data/ids_index_v2.json data/human_proportions.json model_output/mesh.obj model_output/rigInfo.json",
                 "move model_output ..",
                 "cd ..",
-                "move model_output \"Rigging and Animation\"",
-                "cd \"Rigging and Animation\""
+                "move model_output \"RiggingAndAnimation\"",
+                "cd \"RiggingAndAnimation\""
             };
 
             Utility.ExecuteCommand(buildingModel, projDirectory);
 
             percentage = 100;
+        }
+
+        public static void ExecuteCommand(string[] Commands, string Path)
+        {
+            string batFileName = Path + @"\" + Guid.NewGuid() + ".bat";
+
+            using (StreamWriter batFile = new StreamWriter(batFileName))
+            {
+                foreach (string Comm in Commands)
+                    batFile.WriteLine(Comm);
+            }
+
+            ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe", "/c " + batFileName);
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.CreateNoWindow = false;
+            processStartInfo.WindowStyle = ProcessWindowStyle.Normal;
+
+            Process p = new Process();
+            p.StartInfo = processStartInfo;
+            p.Start();
+            p.WaitForExit();
+
+            File.Delete(batFileName);
         }
     }
 }
