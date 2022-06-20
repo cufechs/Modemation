@@ -18,7 +18,6 @@ namespace GP
         private string videoPath;
         private string projDirectory;
         private int frameSamplingRate = 6;
-        private int currentItem = 1;
         private int percentage = 0;
         private string currentOperation = "Nothing";
 
@@ -46,10 +45,14 @@ namespace GP
         {
             ImGui.Begin("Modemation");
 
+            float screenWidth = ImGui.GetWindowContentRegionWidth();
+            float screenHeight = ImGui.GetWindowHeight();
+            ImGui.Indent((screenWidth - tex.Width) * 0.5f);
             ImGui.Image(texPointer, new System.Numerics.Vector2(tex.Width, tex.Height));
+            ImGui.Unindent(screenWidth * 0.45f);
 
             //Import input image
-            if (ImGui.Button("Import Image"))
+            if (ImGui.Button("Import Image", new System.Numerics.Vector2(screenWidth * 0.25f, 0)))
             {
                 using (var fbd = new OpenFileDialog())
                 {
@@ -69,15 +72,14 @@ namespace GP
                         //Copy image to project
                         File.Copy(imagePath, projDirectory + "\\inputs\\image" + "\\" + fileName);
                     }
-                    else if (result == DialogResult.Cancel)
-                    {
-                        System.Environment.Exit(0);
-                    }
                 }
             }
 
+            ImGui.SameLine();
+            HelpMarker("Import input image with a T pose");
+
             //Import input video
-            if (ImGui.Button("Import Video"))
+            if (ImGui.Button("Import Video", new System.Numerics.Vector2(screenWidth * 0.25f, 0)))
             {
                 using (var fbd = new OpenFileDialog())
                 {
@@ -97,32 +99,58 @@ namespace GP
                         //Copy video to project
                         File.Copy(videoPath, projDirectory + "\\inputs\\video" + "\\" + fileName);
                     }
-                    else if (result == DialogResult.Cancel)
-                    {
-                        System.Environment.Exit(0);
-                    }
                 }
             }
 
-            ImGui.Combo("Sampling Rate", ref currentItem, Enum.GetNames(typeof(SampleRate)), Enum.GetNames(typeof(SampleRate)).Length);
+            ImGui.SameLine();
+            HelpMarker("Import input video having a one character in it");
 
-            if (ImGui.Button("Start"))
+            if (ImGui.BeginCombo("Sampling Rate", frameSamplingRate.ToString()))
+            {
+                foreach (int val in Enum.GetValues(typeof(SampleRate)))
+                    if (ImGui.Selectable(val.ToString()))
+                        frameSamplingRate = val;
+
+                ImGui.EndCombo();
+            }
+
+            ImGui.NewLine();
+            ImGui.Separator();
+            ImGui.NewLine();
+
+            ImGui.SetCursorPosX(screenWidth * 0.43f);
+            ImGui.Text("Current Operation: " + currentOperation);
+            ImGui.SetCursorPosX(screenWidth * 0.43f);
+            ImGui.Text("Progress: " + percentage.ToString() + "%");
+
+            ImGui.SetCursorPosX(screenWidth * 0.5f - screenWidth * 0.125f);
+            ImGui.SetCursorPosY(screenHeight * 0.75f);
+            if (ImGui.Button("Start", new System.Numerics.Vector2(screenWidth * 0.25f, 0)))
             {
                 if (Directory.Exists(projDirectory + "\\inputs\\video") &&
                     Directory.Exists(projDirectory + "\\inputs\\image") &&
                     Directory.GetFiles(projDirectory + "\\inputs\\video").Length != 0 &&
                     Directory.GetFiles(projDirectory + "\\inputs\\image").Length != 0)
                 {
-                    frameSamplingRate = (int)(Enum.GetValues(typeof(SampleRate)).GetValue(currentItem));
-
                     Threader.Invoke(StartOperation, 0);
                 }
             }
 
-            ImGui.Text("Current Operation: " + currentOperation);
-            ImGui.Text("Progress: " + percentage.ToString() + "%");
-
             ImGui.End();
+        }
+
+        public static void HelpMarker(string desc, bool DisplayMarker = true)
+        {
+            if (DisplayMarker)
+                ImGui.TextDisabled("(?)");
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.PushTextWrapPos(ImGui.GetFontSize() * 35.0f);
+                ImGui.TextUnformatted(desc);
+                ImGui.PopTextWrapPos();
+                ImGui.EndTooltip();
+            }
         }
 
         void StartOperation()
@@ -131,6 +159,7 @@ namespace GP
             string[] imagePreprocessing = new string[]
             {
                 "cd " + projDirectory, //Go to the existing directory
+                "timeout 10",
                 "py preprocessing/clear_dir.py",
                 "py preprocessing/get_image.py ",
                 "cd HumanSeg",
