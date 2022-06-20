@@ -1,7 +1,3 @@
-
-cd "S:\Semester 10 (Spring-2022)\Graduation project\Modemation\Rigging and Animation"
-
-
 py preprocessing/clear_dir.py
 
 
@@ -58,7 +54,7 @@ move human_proportions.json data
 
 move model_output ..
 cd .. 
-move model_output "Rigging and Animation"
-cd "Rigging and Animation"
+move model_output RiggingAndAnimation"
+cd RiggingAndAnimation"
 ::::::::::::::::::::::::::::::::::::::::
 
