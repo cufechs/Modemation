@@ -1,0 +1,368 @@
+[
+    {
+        "id": "nosetip",
+        "coordinates": [
+            -0.000444, 0.40232, 0.1326
+        ]
+    },
+    {
+        "id": "nose.right",
+        "coordinates": [
+            -0.016741, 0.39308, 0.10995
+        ]
+    },
+    {
+        "id": "nose.left",
+        "coordinates": [
+            0.015315, 0.39281, 0.11033
+        ]
+    },
+    {
+        "id": "chin",
+        "coordinates": [
+            0.000303, 0.33085, 0.11295
+        ]
+    },
+    {
+        "id": "eye.right.right",
+        "coordinates": [
+            -0.045534, 0.43053, 0.087238
+        ]
+    },
+    {
+        "id": "eye.right.left",
+        "coordinates": [
+            -0.020126, 0.43044, 0.092987
+        ]
+    },
+    {
+        "id": "eye.left.right",
+        "coordinates": [
+            0.01922, 0.43109, 0.094384
+        ]
+    },
+    {
+        "id": "eye.left.left",
+        "coordinates": [
+            0.04498, 0.4305, 0.088904
+        ]
+    },
+    {
+        "id": "head.front",
+        "coordinates": [
+            -0.001165, 0.48327, 0.1018
+        ]
+    },
+    {
+        "id": "head.right",
+        "coordinates": [
+            -0.078049, 0.47186, 0.008545
+        ]
+    },
+    {
+        "id": "head.left",
+        "coordinates": [
+            0.075245, 0.47164, 0.009838
+        ]
+    },
+    {
+        "id": "head.top",
+        "coordinates": [
+            -0.001928, 0.53766, 0.004546
+        ]
+    },
+    {
+        "id": "lip.right",
+        "coordinates": [
+            -0.023667, 0.36563, 0.1038
+        ]
+    },
+    {
+        "id": "lip.left",
+        "coordinates": [
+            0.02289, 0.36541, 0.10431
+        ]
+    },
+    {
+        "id": "head.back",
+        "coordinates": [
+            -0.002453, 0.46984, -0.086411
+        ]
+    },
+    {
+        "id": "chest.front.center",
+        "coordinates": [
+            0.000969, 0.13576, 0.11636
+        ]
+    },
+    {
+        "id": "chest.right",
+        "coordinates": [
+            -0.15714, 0.11348, 0.032035
+        ]
+    },
+    {
+        "id": "chest.left",
+        "coordinates": [
+            0.15944, 0.11653, 0.033586
+        ]
+    },
+    {
+        "id": "chest.back.center",
+        "coordinates": [
+            -0.000991, 0.15686, -0.099714
+        ]
+    },
+    {
+        "id": "neckstart.front.center",
+        "coordinates": [
+            0.003514, 0.24614, 0.045521
+        ]
+    },
+    {
+        "id": "neckstart.back.center",
+        "coordinates": [
+            -0.000609, 0.2971, -0.056178
+        ]
+    },
+    {
+        "id": "lip.top.center",
+        "coordinates": [
+            -0.000256, 0.37324, 0.1181
+        ]
+    },
+    {
+        "id": "lip.bottom.center",
+        "coordinates": [
+            -0.000038, 0.36172, 0.11687
+        ]
+    },
+    {
+        "id": "belly.front.center",
+        "coordinates": [
+            -0.005151, -0.12623, 0.16119
+        ]
+    },
+    {
+        "id": "shoulder.right.top",
+        "coordinates": [
+            -0.13834, 0.26783, -0.00296
+        ]
+    },
+    {
+        "id": "shoulder.left.top",
+        "coordinates": [
+            0.14315, 0.27186, 0.000606
+        ]
+    },
+    {
+        "id": "belly.right",
+        "coordinates": [
+            -0.15722, -0.12578, 0.01423
+        ]
+    },
+    {
+        "id": "belly.left",
+        "coordinates": [
+            0.15643, -0.12374, 0.021792
+        ]
+    },
+    {
+        "id": "belly.back.center",
+        "coordinates": [
+            -0.00024, -0.25443, -0.093737
+        ]
+    },
+    {
+        "id": "shoulder.right.front",
+        "coordinates": [
+            -0.16366, 0.22544, 0.038022
+        ]
+    },
+    {
+        "id": "shoulder.left.front",
+        "coordinates": [
+            0.16538, 0.22784, 0.041987
+        ]
+    },
+    {
+        "id": "shoulder.right.side",
+        "coordinates": [
+            -0.23372, 0.25793, -0.017617
+        ]
+    },
+    {
+        "id": "shoulder.left.side",
+        "coordinates": [
+            0.23674, 0.26193, -0.015441
+        ]
+    },
+    {
+        "id": "shoulder.right.back",
+        "coordinates": [
+            -0.26759, 0.20967, -0.074597
+        ]
+    },
+    {
+        "id": "shoulder.left.back",
+        "coordinates": [
+            0.26671, 0.20974, -0.071286
+        ]
+    },
+    {
+        "id": "pampers.front",
+        "coordinates": [
+            0.001532, -0.30132, 0.12664
+        ]
+    },
+    {
+        "id": "pampers.back",
+        "coordinates": [
+            0.000827, -0.26539, -0.11427
+        ]
+    },
+    {
+        "id": "waist.front.center",
+        "coordinates": [
+            -0.003243, -0.20674, 0.16362
+        ]
+    },
+    {
+        "id": "waist.back.center",
+        "coordinates": [
+            0.000261, -0.15505, -0.089505
+        ]
+    },
+    {
+        "id": "waist.right",
+        "coordinates": [
+            -0.17116, -0.15677, 0.016518
+        ]
+    },
+    {
+        "id": "waist.left",
+        "coordinates": [
+            0.17043, -0.15395, 0.023281
+        ]
+    },
+    {
+        "id": "knee.right.front",
+        "coordinates": [
+            -0.093398, -0.66988, 0.061795
+        ]
+    },
+    {
+        "id": "knee.left.front",
+        "coordinates": [
+            0.089892, -0.66922, 0.06296
+        ]
+    },
+    {
+        "id": "knee.right.back",
+        "coordinates": [
+            -0.092494, -0.66943, -0.059661
+        ]
+    },
+    {
+        "id": "knee.left.back",
+        "coordinates": [
+            0.09241, -0.67024, -0.058326
+        ]
+    },
+    {
+        "id": "ankle.right.inside",
+        "coordinates": [
+            -0.070972, -1.0463, -0.032979
+        ]
+    },
+    {
+        "id": "ankle.left.inside",
+        "coordinates": [
+            0.065273, -1.0497, -0.018343
+        ]
+    },
+    {
+        "id": "ankle.right.outside",
+        "coordinates": [
+            -0.13072, -1.044, -0.028506
+        ]
+    },
+    {
+        "id": "ankle.left.outside",
+        "coordinates": [
+            0.12913, -1.0442, -0.032142
+        ]
+    },
+    {
+        "id": "foot.right.bottom.center",
+        "coordinates": [
+            -0.1067, -1.1121, 0.046365
+        ]
+    },
+    {
+        "id": "foot.left.bottom.center",
+        "coordinates": [
+            0.10658, -1.1131, 0.041292
+        ]
+    },
+    {
+        "id": "elbow.right",
+        "coordinates": [
+            -0.42544, 0.20596, -0.070808
+        ]
+    },
+    {
+        "id": "elbow.left",
+        "coordinates": [
+            0.41515, 0.21765, -0.063983
+        ]
+    },
+    {
+        "id": "midhand.right.center",
+        "coordinates": [
+            -0.40715, 0.20955, 0.003772
+        ]
+    },
+    {
+        "id": "midhand.left.center",
+        "coordinates": [
+            0.43805, 0.20789, 0.000408
+        ]
+    },
+    {
+        "id": "wrist.right.front",
+        "coordinates": [
+            -0.65876, 0.21047, -0.009449
+        ]
+    },
+    {
+        "id": "wrist.left.front",
+        "coordinates": [
+            0.65996, 0.21286, -0.009293
+        ]
+    },
+    {
+        "id": "wrist.right.back",
+        "coordinates": [
+            -0.66389, 0.20686, -0.068213
+        ]
+    },
+    {
+        "id": "wrist.left.back",
+        "coordinates": [
+            0.65776, 0.21917, -0.063934
+        ]
+    },
+    {
+        "id": "fist.right.fist",
+        "coordinates": [
+            -0.83486, 0.21046, -0.056554
+        ]
+    },
+    {
+        "id": "fist.left.fist",
+        "coordinates": [
+            0.83559, 0.21344, -0.052892
+        ]
+    }
+]

@@ -1,3 +1,13 @@
+.*/
+inputs/*
+frames/
+openpose/
+_Trails/
+HumanSeg/
+test/
+
+*.fbx
+
 # generic files to ignore
 .git
 
