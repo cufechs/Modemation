@@ -130,7 +130,7 @@ namespace GP
             currentOperation = "Image Preprocessing...";
             string[] imagePreprocessing = new string[]
             {
-                "cd " + projDirectory, //Go to the existing directory
+                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
                 "py preprocessing/clear_dir.py",
                 "py preprocessing/get_image.py ",
                 "cd HumanSeg",
@@ -155,7 +155,7 @@ namespace GP
             currentOperation = "Pose Estimation...";
             string[] poseEstimation = new string[]
             {
-                "cd " + projDirectory, //Go to the existing directory
+                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
                 "py preprocessing/get_frames.py -mfps " + frameSamplingRate.ToString() + " -rf 4",
                 "move frames openpose",
                 "cd openpose",
@@ -173,7 +173,7 @@ namespace GP
             currentOperation = "Cropping Input Image...";
             string[] croppingImage = new string[]
             {
-                "cd " + projDirectory, //Go to the existing directory
+                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
                 "py preprocessing/crop_image_2.py",
                 "py preprocessing/get_proportions.py -out_dir human_proportions.json -s"
             };
@@ -186,7 +186,7 @@ namespace GP
             currentOperation = "Building Model...";
             string[] buildingModel = new string[]
             {
-                "cd " + projDirectory, //Go to the existing directory
+                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
                 "move human_proportions.json ..",
                 "cd ..",
                 "move human_proportions.json Human3D",
