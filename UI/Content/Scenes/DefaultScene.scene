@@ -1,0 +1,107 @@
+{
+  "Type": "FN_Engine.Scene, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Generated ID": 1,
+  "ShouldSort": "False",
+  "Active": "True",
+  "Name": "DefaultScene",
+  "GameObjects": [
+    {
+      "Length": 2,
+      "Item Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+    },
+    {
+      "Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Generated ID": 2,
+      "Name": "Camera Controller",
+      "ShouldBeDeleted": "False",
+      "ShouldBeRemoved": "False",
+      "UI_Layer": "1",
+      "Children": [
+        {
+          "Length": 0,
+          "Item Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        }
+      ],
+      "Transform": {
+        "Type": "FN_Engine.Transform, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "Generated ID": 3,
+        "MoveLocally": "False",
+        "Position": "{X:0 Y:0}",
+        "Rotation": "0",
+        "Scale": "{X:1 Y:1}",
+        "gameObject": "2",
+        "Enabled": "True",
+        "LastPosition": "{X:0 Y:0}",
+        "LastRotation": "0",
+        "LastScale": "{X:1 Y:1}"
+      },
+      "GameObjectComponents": [
+        {
+          "Length": 2,
+          "Item Type": "FN_Engine.GameObjectComponent, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        },
+        "3",
+        {
+          "Type": "FN_Engine.CameraController, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 4,
+          "Visualize": "False",
+          "gameObject": "2",
+          "Enabled": "True",
+          "IsFullScreen": "False",
+          "CameraZoom": "1",
+          "ScreenSize": "{X:1366 Y:768}",
+          "TargetResolution": "{X:1366 Y:768}"
+        }
+      ],
+      "PrefabNum": "-1",
+      "IsEditor": "False",
+      "Layer": "1",
+      "Active": "True"
+    },
+    {
+      "Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Generated ID": 5,
+      "Tag": "null",
+      "Name": "Default",
+      "ShouldBeDeleted": "False",
+      "ShouldBeRemoved": "False",
+      "UI_Layer": "1",
+      "Children": [
+        {
+          "Length": 0,
+          "Item Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        }
+      ],
+      "Transform": {
+        "Type": "FN_Engine.Transform, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "Generated ID": 6,
+        "MoveLocally": "False",
+        "Position": "{X:0 Y:0}",
+        "Rotation": "0",
+        "Scale": "{X:1 Y:1}",
+        "gameObject": "5",
+        "Enabled": "True",
+        "LastPosition": "{X:0 Y:0}",
+        "LastRotation": "0",
+        "LastScale": "{X:1 Y:1}"
+      },
+      "GameObjectComponents": [
+        {
+          "Length": 2,
+          "Item Type": "FN_Engine.GameObjectComponent, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        },
+        "6",
+        {
+          "Type": "GP.Importer, GP, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 7,
+          "gameObject": "5",
+          "Enabled": "True"
+        }
+      ],
+      "PrefabNum": "-1",
+      "IsEditor": "False",
+      "Layer": "1",
+      "Active": "True"
+    }
+  ]
+}

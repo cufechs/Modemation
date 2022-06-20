@@ -1,0 +1,197 @@
+{
+  "Type": "FN_Engine.Scene, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Generated ID": 1,
+  "ShouldSort": "True",
+  "Active": "True",
+  "Name": "DefaultScene",
+  "GameObjects": [
+    {
+      "Length": 3,
+      "Item Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+    },
+    {
+      "Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Generated ID": 2,
+      "Name": "Camera Controller",
+      "ShouldBeDeleted": "False",
+      "ShouldBeRemoved": "False",
+      "UI_Layer": "1",
+      "Children": [
+        {
+          "Length": 0,
+          "Item Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        }
+      ],
+      "Transform": {
+        "Type": "FN_Engine.Transform, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "Generated ID": 3,
+        "MoveLocally": "False",
+        "Position": "{X:0 Y:0}",
+        "Rotation": "0",
+        "Scale": "{X:1 Y:1}",
+        "gameObject": "2",
+        "Enabled": "True",
+        "LastPosition": "{X:0 Y:0}",
+        "LastRotation": "0",
+        "LastScale": "{X:1 Y:1}"
+      },
+      "GameObjectComponents": [
+        {
+          "Length": 2,
+          "Item Type": "FN_Engine.GameObjectComponent, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        },
+        "3",
+        {
+          "Type": "FN_Engine.CameraController, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 4,
+          "Visualize": "False",
+          "gameObject": "2",
+          "Enabled": "True",
+          "IsFullScreen": "False",
+          "CameraZoom": "1",
+          "ScreenSize": "{X:1366 Y:768}",
+          "TargetResolution": "{X:1366 Y:768}"
+        }
+      ],
+      "PrefabNum": "-1",
+      "IsEditor": "False",
+      "Layer": "1",
+      "Active": "True"
+    },
+    {
+      "Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Generated ID": 5,
+      "Tag": "null",
+      "Name": "Default",
+      "ShouldBeDeleted": "False",
+      "ShouldBeRemoved": "False",
+      "UI_Layer": "1",
+      "Children": [
+        {
+          "Length": 0,
+          "Item Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        }
+      ],
+      "Transform": {
+        "Type": "FN_Engine.Transform, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "Generated ID": 6,
+        "MoveLocally": "False",
+        "Position": "{X:0 Y:0}",
+        "Rotation": "0",
+        "Scale": "{X:1 Y:1}",
+        "gameObject": "5",
+        "Enabled": "True",
+        "LastPosition": "{X:0 Y:0}",
+        "LastRotation": "0",
+        "LastScale": "{X:1 Y:1}"
+      },
+      "GameObjectComponents": [
+        {
+          "Length": 2,
+          "Item Type": "FN_Engine.GameObjectComponent, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        },
+        "6",
+        {
+          "Type": "GP.Importer, GP, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 7,
+          "gameObject": "5",
+          "Enabled": "True"
+        }
+      ],
+      "PrefabNum": "-1",
+      "IsEditor": "False",
+      "Layer": "1",
+      "Active": "True"
+    },
+    {
+      "Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Generated ID": 8,
+      "Name": "EditorGameObject",
+      "ShouldBeDeleted": "False",
+      "ShouldBeRemoved": "False",
+      "UI_Layer": "1",
+      "Children": [
+        {
+          "Length": 0,
+          "Item Type": "FN_Engine.GameObject, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        }
+      ],
+      "GameObjectComponents": [
+        {
+          "Length": 7,
+          "Item Type": "FN_Engine.GameObjectComponent, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+        },
+        {
+          "Type": "FN_Engine.FN_Editor.GameObjects_Tab, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 9,
+          "gameObject": "8",
+          "Enabled": "True"
+        },
+        {
+          "Type": "FN_Engine.FN_Editor.InspectorWindow, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 10,
+          "gameObject": "8",
+          "Enabled": "True"
+        },
+        {
+          "Type": "FN_Engine.FN_Editor.ContentWindow, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 11,
+          "SPIs": [
+            {
+              "Length": 0,
+              "Item Type": "System.String, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"
+            }
+          ],
+          "Prefabs": [
+            {
+              "Length": 0,
+              "Item Type": "FN_Engine.FN_Editor.ContentWindow+Prefab, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+            }
+          ],
+          "gameObject": "8",
+          "Enabled": "True"
+        },
+        {
+          "Type": "FN_Engine.FN_Editor.GizmosVisualizer, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 12,
+          "gameObject": "8",
+          "Enabled": "True"
+        },
+        {
+          "Type": "FN_Engine.FN_Editor.EditorScene, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 13,
+          "gameObject": "8",
+          "Enabled": "True"
+        },
+        {
+          "Type": "FN_Engine.FN_Editor.AnimationEditor, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 14,
+          "AnimationClips": [
+            {
+              "Length": 0,
+              "Item Type": "FN_Engine.FN_Editor.AnimationEditor+AnimationInfo, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+            }
+          ],
+          "gameObject": "8",
+          "Enabled": "True"
+        },
+        {
+          "Type": "FN_Engine.FN_Editor.TilemapEditor, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "Generated ID": 15,
+          "TileSets": [
+            {
+              "Length": 0,
+              "Item Type": "FN_Engine.FN_Editor.TileSetClass, FN_Engine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+            }
+          ],
+          "gameObject": "8",
+          "Enabled": "True"
+        }
+      ],
+      "PrefabNum": "-1",
+      "IsEditor": "True",
+      "Layer": "-1",
+      "Active": "True"
+    }
+  ]
+}
