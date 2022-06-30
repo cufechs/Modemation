@@ -12,8 +12,8 @@ from mathutils import Matrix
 
 class cf(): # common functions
     
-    EXPORT_PATH = "\\test\\"
-    RENDER_DIR = "\\test\\"
+    EXPORT_PATH = "\\output\\model.fbx"
+    RENDER_DIR = "\\output\\"
     MODEL_DIR = "\\model_output\\mesh.obj"
     MODEL_REG_INFO = "\\model_output\\rigInfo.json"
     INITIAL_MODEL_POSE = "\\model\\initialModelPose.json"
@@ -173,10 +173,10 @@ class TestPanel(bpy.types.Panel):
     bl_category = "Test Panel"
 
     def draw(self, context):
-        self.layout.operator("mesh.apply_script", icon='MESH_CUBE', text="1- Apply Script") 
-        self.layout.operator("mesh.import_model", icon='MESH_CUBE', text="2- Import Model")
-        self.layout.operator("mesh.add_texture", icon='MESH_CUBE', text="3- Add Texture") 
-        self.layout.operator("mesh.animate", icon='MESH_CUBE', text="4- Animate")
+        #self.layout.operator("mesh.apply_script", icon='MESH_CUBE', text="1- Apply Script") 
+        self.layout.operator("mesh.import_model", icon='MESH_CUBE', text="1- Import Model")
+        self.layout.operator("mesh.add_texture", icon='MESH_CUBE', text="2- Add Texture") 
+        self.layout.operator("mesh.animate", icon='MESH_CUBE', text="3- Animate")
         self.layout.operator("mesh.render", icon='MESH_CUBE', text="Render to video") 
         self.layout.operator("mesh.export_model", icon='MESH_CUBE', text="Export Model")      
         self.layout.operator("mesh.delete_model", icon='MESH_CUBE', text="Delete Model")           
@@ -199,9 +199,11 @@ class export_model(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
      
     def execute(self, context):
-        
-        bpy.ops.export_scene.fbx(cf.MAIN_DIR + cf.EXPORT_PATH, type='INVOKE_DEFAULT')
-        
+        #print(cf.MAIN_DIR + cf.EXPORT_PATH)
+        #bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        #bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.export_scene.fbx(filepath = cf.MAIN_DIR + cf.EXPORT_PATH)
+ 
         return {"FINISHED"}
 
 class render(bpy.types.Operator): 
@@ -1081,6 +1083,14 @@ class addReggedModel(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='POSE', toggle=False)
 
     def execute(self, context):
+        ## Delete model
+        try:
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='SELECT')
+            bpy.ops.object.delete()
+        except:
+            pass
+        
         cf.setupSun()
         cf.setupCamera(context.scene)
         self.import_model()

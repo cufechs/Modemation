@@ -20,3 +20,8 @@ To download the model of HumanSeg:
 cd HumanSeg
 pip install paddleseg
 python export_model/download_export_model.py
+```
+
+3. Downloading Blender (2.8+) 
+
+After downloading Blender, copy the path of "blender.exe" and put it in file 'preprocessing/run_blender.py', to the variable 'blender_path'

@@ -4,8 +4,8 @@ using ImGuiNET;
 using System;
 using Microsoft.Xna.Framework.Graphics;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using System.IO;
+using System.Diagnostics;
 
 namespace GP
 {
@@ -17,11 +17,16 @@ namespace GP
         private string videoPath;
         private string projDirectory;
         private int frameSamplingRate = 6;
-        private int currentItem = 1;
         private int percentage = 0;
         private string currentOperation = "Nothing";
+        private bool useAnimation = true;
+        private int numberOfDots = 0;
+        private readonly int maxNumberOfDots = 4;
+        private float timer = 0;
+        private readonly float maxTime = 0.8f;
+        private bool started = false;
 
-        public enum SampleRate { Four=4, Six=6, Nine=9};
+        public enum SampleRate { Four = 4, Six = 6, Nine = 9 };
 
         public override void Start()
         {
@@ -33,7 +38,7 @@ namespace GP
             string currentDirectory = Directory.GetCurrentDirectory();
             projDirectory = currentDirectory.Remove(currentDirectory.LastIndexOf('\\'));
             projDirectory = projDirectory.Remove(projDirectory.LastIndexOf('\\'));
-            projDirectory += "\\Rigging and Animation";
+            projDirectory += "\\RiggingAndAnimation";
         }
 
         public override void Update(GameTime gameTime)
@@ -45,10 +50,14 @@ namespace GP
         {
             ImGui.Begin("Modemation");
 
+            float screenWidth = ImGui.GetWindowContentRegionWidth();
+            float screenHeight = ImGui.GetWindowHeight();
+            ImGui.Indent((screenWidth - tex.Width) * 0.5f);
             ImGui.Image(texPointer, new System.Numerics.Vector2(tex.Width, tex.Height));
+            ImGui.Unindent(screenWidth * 0.45f);
 
             //Import input image
-            if (ImGui.Button("Import Image"))
+            if (ImGui.Button("Import Image", new System.Numerics.Vector2(screenWidth * 0.25f, 0)))
             {
                 using (var fbd = new OpenFileDialog())
                 {
@@ -68,15 +77,14 @@ namespace GP
                         //Copy image to project
                         File.Copy(imagePath, projDirectory + "\\inputs\\image" + "\\" + fileName);
                     }
-                    else if (result == DialogResult.Cancel)
-                    {
-                        System.Environment.Exit(0);
-                    }
                 }
             }
 
+            ImGui.SameLine();
+            HelpMarker("Import input image with a T pose");
+
             //Import input video
-            if (ImGui.Button("Import Video"))
+            if (ImGui.Button("Import Video", new System.Numerics.Vector2(screenWidth * 0.25f, 0)))
             {
                 using (var fbd = new OpenFileDialog())
                 {
@@ -96,33 +104,96 @@ namespace GP
                         //Copy video to project
                         File.Copy(videoPath, projDirectory + "\\inputs\\video" + "\\" + fileName);
                     }
-                    else if (result == DialogResult.Cancel)
-                    {
-                        System.Environment.Exit(0);
-                    }
                 }
             }
 
-            ImGui.Combo("Sampling Rate", ref currentItem, Enum.GetNames(typeof(SampleRate)), Enum.GetNames(typeof(SampleRate)).Length);
+            ImGui.SameLine();
+            HelpMarker("Import input video having a one character in it");
 
-            if (ImGui.Button("Start"))
+            ImGui.Checkbox("Animation", ref useAnimation);
+
+            if (useAnimation)
+            {
+                if (ImGui.BeginCombo("Sampling Rate", frameSamplingRate.ToString()))
+                {
+                    foreach (int val in Enum.GetValues(typeof(SampleRate)))
+                        if (ImGui.Selectable(val.ToString()))
+                            frameSamplingRate = val;
+
+                    ImGui.EndCombo();
+                }
+
+                ImGui.SameLine();
+                HelpMarker("How many frames are taken in each second of the video");
+            }
+
+            ImGui.NewLine();
+            ImGui.Separator();
+            ImGui.NewLine();
+
+            ImGui.SetCursorPosX(screenWidth * 0.43f);
+            ImGui.Text("Current Operation: " + currentOperation);
+            ImGui.SetCursorPosX(screenWidth * 0.43f);
+            ImGui.Text("Progress: " + percentage.ToString() + " %%");
+            ImGui.SameLine();
+
+            if (started)
+            {
+                if (timer >= maxTime)
+                {
+                    timer = 0;
+                    numberOfDots = (numberOfDots == maxNumberOfDots) ? 0 : numberOfDots + 1;
+                }
+                else
+                    timer += ImGui.GetIO().DeltaTime;
+
+                for (int i = 0; i < numberOfDots; i++)
+                {
+                    ImGui.Text(".");
+                    ImGui.SameLine();
+                }
+
+                if (numberOfDots != 0)
+                    ImGui.NewLine();
+            }
+
+            if (percentage == 100)
+            {
+                started = false;
+                numberOfDots = 0;
+                timer = 0;
+            }
+
+            ImGui.SetCursorPosX(screenWidth * 0.5f - screenWidth * 0.125f);
+            ImGui.SetCursorPosY(screenHeight * 0.75f);
+            if (ImGui.Button("Start", new System.Numerics.Vector2(screenWidth * 0.25f, 0)))
             {
                 if (Directory.Exists(projDirectory + "\\inputs\\video") &&
                     Directory.Exists(projDirectory + "\\inputs\\image") &&
                     Directory.GetFiles(projDirectory + "\\inputs\\video").Length != 0 &&
                     Directory.GetFiles(projDirectory + "\\inputs\\image").Length != 0)
                 {
-                    frameSamplingRate = (int)(Enum.GetValues(typeof(SampleRate)).GetValue(currentItem));
-
+                    started = true;
+                    percentage = 0;
                     Threader.Invoke(StartOperation, 0);
                 }
             }
 
-            ImGui.Text("Current Operation: " + currentOperation);
-            ImGui.Text("Progress: " + percentage.ToString() + "%");
-            ImGui.Text("Directory: " + projDirectory);
-
             ImGui.End();
+        }
+
+        public static void HelpMarker(string desc, bool DisplayMarker = true)
+        {
+            if (DisplayMarker)
+                ImGui.TextDisabled("(?)");
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.PushTextWrapPos(ImGui.GetFontSize() * 35.0f);
+                ImGui.TextUnformatted(desc);
+                ImGui.PopTextWrapPos();
+                ImGui.EndTooltip();
+            }
         }
 
         void StartOperation()
@@ -130,7 +201,7 @@ namespace GP
             currentOperation = "Image Preprocessing...";
             string[] imagePreprocessing = new string[]
             {
-                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
+                "cd " + projDirectory, //Go to the existing directory
                 "py preprocessing/clear_dir.py",
                 "py preprocessing/get_image.py ",
                 "cd HumanSeg",
@@ -147,7 +218,7 @@ namespace GP
                 "py preprocessing/crop_image_1.py"
             };
 
-            Utility.ExecuteCommand(imagePreprocessing, projDirectory);
+            ExecuteCommand(imagePreprocessing, projDirectory);
 
             percentage = 5;
 
@@ -155,7 +226,7 @@ namespace GP
             currentOperation = "Pose Estimation...";
             string[] poseEstimation = new string[]
             {
-                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
+                "cd " + projDirectory, //Go to the existing directory
                 "py preprocessing/get_frames.py -mfps " + frameSamplingRate.ToString() + " -rf 4",
                 "move frames openpose",
                 "cd openpose",
@@ -173,7 +244,7 @@ namespace GP
             currentOperation = "Cropping Input Image...";
             string[] croppingImage = new string[]
             {
-                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
+                "cd " + projDirectory, //Go to the existing directory
                 "py preprocessing/crop_image_2.py",
                 "py preprocessing/get_proportions.py -out_dir human_proportions.json -s"
             };
@@ -186,7 +257,7 @@ namespace GP
             currentOperation = "Building Model...";
             string[] buildingModel = new string[]
             {
-                "cd " + "\"" + projDirectory + "\"", //Go to the existing directory
+                "cd " + projDirectory, //Go to the existing directory
                 "move human_proportions.json ..",
                 "cd ..",
                 "move human_proportions.json Human3D",
@@ -195,13 +266,47 @@ namespace GP
                 ".\\build\\Debug\\fitting models/pcaModel_male.csv models/meanMesh.csv data/referenceObj.obj data/ids_index_v2.json data/human_proportions.json model_output/mesh.obj model_output/rigInfo.json",
                 "move model_output ..",
                 "cd ..",
-                "move model_output \"Rigging and Animation\"",
-                "cd \"Rigging and Animation\""
+                "move model_output \"RiggingAndAnimation\"",
+                "cd \"RiggingAndAnimation\""
             };
 
             Utility.ExecuteCommand(buildingModel, projDirectory);
 
             percentage = 100;
+
+            currentOperation = "Running Blender...";
+            string[] runningBlender = new string[]
+            {
+                "cd " + projDirectory, //Go to the existing directory
+                "py preprocessing/run_blender.py",
+            };
+
+            Utility.ExecuteCommand(runningBlender, projDirectory);
+
+            percentage = 100;
+        }
+
+        public static void ExecuteCommand(string[] Commands, string Path)
+        {
+            string batFileName = Path + @"\" + Guid.NewGuid() + ".bat";
+
+            using (StreamWriter batFile = new StreamWriter(batFileName))
+            {
+                foreach (string Comm in Commands)
+                    batFile.WriteLine(Comm);
+            }
+
+            ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe", "/c " + batFileName);
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.CreateNoWindow = true;
+            processStartInfo.WindowStyle = ProcessWindowStyle.Normal;
+
+            Process p = new Process();
+            p.StartInfo = processStartInfo;
+            p.Start();
+            p.WaitForExit();
+
+            File.Delete(batFileName);
         }
     }
 }

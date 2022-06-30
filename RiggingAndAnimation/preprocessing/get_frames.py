@@ -37,7 +37,10 @@ if __name__ == '__main__' :
     while success:    
         if gap == 0:
             frames_count += 1
-            resized_image = cv2.resize(image, (width//resize_factor, hight//resize_factor), interpolation = cv2.INTER_NEAREST)
+            if width < 1000 or hight < 1000:
+                resized_image = cv2.resize(image, (width, hight), interpolation = cv2.INTER_NEAREST)
+            else:
+                resized_image = cv2.resize(image, (width//resize_factor, hight//resize_factor), interpolation = cv2.INTER_NEAREST)
             cv2.imwrite("frames/frame%d.jpg" % frames_count, resized_image)     # save frame as JPG file      
             success, image = vidcap.read()
             gap += frames_gap-1

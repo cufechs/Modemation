@@ -1,5 +1,6 @@
 .*/
 inputs/*
+output/*
 frames/
 openpose/
 _Trails/

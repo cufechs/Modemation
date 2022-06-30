@@ -21,7 +21,7 @@ male model + mean mesh: https://drive.google.com/file/d/1qbm_t9WqNWRJKyZP17T1H53
 
 Fit shape model on input json with proportions:
 ```{sh}
-./build/fitting models/pcaModel_male.csv models/meanMesh.csv data/referenceObj.obj data/ids_index_v2.json data/inputParams.json output/finalMesh7.obj output/finalLms7.json
+.\build\Debug\fitting models/pcaModel_male.csv models/meanMesh.csv data/referenceObj.obj data/ids_index_v2.json data/inputParams.json model_output/finalMesh7.obj model_output/finalLms7.json
 ```
 
 Build your own shape model from a directory:
