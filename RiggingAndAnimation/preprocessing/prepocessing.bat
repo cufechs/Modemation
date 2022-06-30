@@ -28,7 +28,7 @@ move frames openpose
 cd openpose
 
 :: Get video frames pose
-::bin\\OpenPoseDemo.exe --image_dir frames/ --write_json frames/pose/
+bin\\OpenPoseDemo.exe --image_dir frames/ --write_json frames/pose/
 
 :: Get input image pose
 bin\\OpenPoseDemo.exe --image_dir frames/initial/ --face --write_json frames/initial/

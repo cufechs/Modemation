@@ -7,7 +7,7 @@
 Download openpose from the following link: https://github.com/CMU-Perceptual-Computing-Lab/openpose/releases
 Note: Choose the GPU version if compatable.
 
-After openpose installation, move directory openpose to 'Rigging and animation' directory, and the download openpose's models by following the instraction given.
+After openpose installation, move directory openpose to 'RiggingAndAnimation' directory, and the download openpose's models by following the instraction given.
 
 2. Downloading Segmentation model
 
